@@ -727,6 +727,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const handler = () => goPage("quote");
+    window.addEventListener("goQuote", handler);
+    return () => window.removeEventListener("goQuote", handler);
+  }, []);
+
+  useEffect(() => {
     if (page !== "home") return;
     const iv = setInterval(() => {
       const nxt = (hiRef.current + 1) % P.length;
@@ -852,7 +858,7 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 .cat-h{text-align:center;margin-bottom:44px}.cat-h h2{font-size:clamp(26px,4vw,40px);margin-bottom:8px}.cat-h p{color:var(--fg2);font-size:15px}
 .cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
 .cc{background:var(--bg2);border:1px solid rgba(0,0,0,0.04);border-radius:var(--rd);overflow:hidden;cursor:pointer;transition:all .3s}.cc:hover{border-color:rgba(8,145,178,0.12);box-shadow:var(--sh);transform:translateY(-3px)}
-.ct{height:190px;background:var(--vbg);display:flex;align-items:center;justify-content:center}.ct svg{opacity:.45}
+.ct{height:190px;background:var(--vbg);overflow:hidden;position:relative}.ct svg{opacity:.45}
 .ci{padding:18px}.ci h3{font-size:17px;margin-bottom:3px;font-family:'Montserrat';font-weight:600}.ci .tl{font-size:12px;color:var(--fg3);margin-bottom:12px}
 .cf{display:flex;justify-content:space-between;align-items:center}
 .cp{font-family:'Montserrat',sans-serif;font-size:22px}
@@ -900,6 +906,74 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 .fp input::placeholder,.fp textarea::placeholder{color:var(--fg3)}
 .fs{width:100%;padding:13px;background:var(--ac);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Montserrat';transition:all .2s}.fs:hover:not(:disabled){background:var(--ac2)}.fs:disabled{opacity:.6;cursor:not-allowed}
 .fok{text-align:center;padding:36px;color:var(--ac);font-size:16px}
+
+/* QUOTE PAGE */
+.qp{padding:90px 0 60px;max-width:1200px;margin:0 auto}
+.qp-hero{background:linear-gradient(135deg,#0b3c73 0%,#0a2d5a 100%);padding:64px 60px;text-align:center;margin-bottom:0}
+.qp-hero h2{font-size:clamp(26px,3.5vw,42px);color:#fff;margin-bottom:12px;font-weight:700}
+.qp-hero p{color:rgba(255,255,255,0.65);font-size:15px;max-width:560px;margin:0 auto}
+.qp-services{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:none}
+.qp-svc{padding:40px 44px;background:var(--bg2);border:1px solid rgba(11,60,115,0.07);display:flex;gap:20px;align-items:flex-start;transition:all .3s}
+.qp-svc:hover{background:#f8faff;border-color:rgba(11,60,115,0.18)}
+.qp-svc-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px}
+.qp-svc h3{font-size:17px;font-weight:700;color:var(--fg);margin-bottom:6px}
+.qp-svc p{font-size:13px;color:var(--fg2);line-height:1.6}
+.qp-process{padding:56px 60px;background:var(--bg3)}
+.qp-process h3{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
+.qp-process > p{text-align:center;color:var(--fg2);font-size:14px;margin-bottom:36px}
+.qp-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.qp-step{background:var(--bg2);border-radius:16px;overflow:hidden;border:1px solid rgba(11,60,115,0.07)}
+.qp-step-img{height:160px;background:linear-gradient(135deg,#dde3ef,#e8ecf5);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.qp-step-img img{width:100%;height:100%;object-fit:cover}
+.qp-step-img-placeholder{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--fg3)}
+.qp-step-img-placeholder span{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.qp-step-body{padding:18px 16px}
+.qp-step-num{width:26px;height:26px;border-radius:50%;background:var(--navy,#0b3c73);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.qp-step h4{font-size:14px;font-weight:700;margin-bottom:4px;color:var(--fg)}
+.qp-step p{font-size:12px;color:var(--fg2);line-height:1.55}
+.qp-form{padding:56px 60px}
+.qp-form h3{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
+.qp-form > p{text-align:center;color:var(--fg2);font-size:14px;margin-bottom:36px}
+.qp-form-inner{max-width:560px;margin:0 auto}
+.qp-form-inner input,.qp-form-inner textarea,.qp-form-inner select{width:100%;padding:13px 16px;background:var(--bg2);border:1.5px solid rgba(11,60,115,0.1);border-radius:12px;color:var(--fg);font-size:14px;font-family:'Montserrat',sans-serif;outline:none;transition:border-color .2s;margin-bottom:12px}
+.qp-form-inner input:focus,.qp-form-inner textarea:focus,.qp-form-inner select:focus{border-color:#0b3c73;box-shadow:0 0 0 3px rgba(11,60,115,0.07)}
+.qp-form-inner textarea{min-height:120px;resize:vertical}
+.qp-form-inner input::placeholder,.qp-form-inner textarea::placeholder{color:var(--fg3)}
+
+/* CONTACT PAGE */
+.cp-wrap{padding:90px 0 60px;max-width:1100px;margin:0 auto}
+.cp-hero{background:linear-gradient(135deg,#0b3c73 0%,#0a2d5a 100%);padding:64px 60px;text-align:center}
+.cp-hero h2{font-size:clamp(26px,3.5vw,42px);color:#fff;margin-bottom:12px;font-weight:700}
+.cp-hero p{color:rgba(255,255,255,0.65);font-size:15px;max-width:480px;margin:0 auto}
+.cp-channels{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--bg2)}
+.cp-channel{padding:40px 36px;text-align:center;border:1px solid rgba(11,60,115,0.07);display:flex;flex-direction:column;align-items:center;gap:14px;transition:all .3s}
+.cp-channel:hover{background:#f8faff;border-color:rgba(11,60,115,0.18)}
+.cp-ch-icon{width:60px;height:60px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.cp-channel h3{font-size:16px;font-weight:700;color:var(--fg)}
+.cp-channel p{font-size:13px;color:var(--fg2);line-height:1.5}
+.cp-ch-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;text-decoration:none;transition:all .2s;border:none;cursor:pointer}
+.cp-ch-btn.green{background:#25D366;color:#fff}.cp-ch-btn.green:hover{background:#1ebe5a;transform:translateY(-1px)}
+.cp-ch-btn.blue{background:#0b3c73;color:#fff}.cp-ch-btn.blue:hover{background:#0d4a8e;transform:translateY(-1px)}
+.cp-ch-btn.coral{background:#d64830;color:#fff}.cp-ch-btn.coral:hover{background:#e85a40;transform:translateY(-1px)}
+.cp-form-section{padding:56px 60px;background:var(--bg3)}
+.cp-form-section h3{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
+.cp-form-section > p{text-align:center;color:var(--fg2);font-size:14px;margin-bottom:36px}
+.cp-form-inner{max-width:520px;margin:0 auto}
+.cp-form-inner input,.cp-form-inner textarea{width:100%;padding:13px 16px;background:var(--bg2);border:1.5px solid rgba(11,60,115,0.1);border-radius:12px;color:var(--fg);font-size:14px;font-family:'Montserrat',sans-serif;outline:none;transition:border-color .2s;margin-bottom:12px}
+.cp-form-inner input:focus,.cp-form-inner textarea:focus{border-color:#0b3c73;box-shadow:0 0 0 3px rgba(11,60,115,0.07)}
+.cp-form-inner textarea{min-height:110px;resize:vertical}
+.cp-form-inner input::placeholder,.cp-form-inner textarea::placeholder{color:var(--fg3)}
+
+/* FLOATING WHATSAPP */
+.wa-float{position:fixed;bottom:28px;right:28px;z-index:400;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.45);cursor:pointer;transition:all .25s;text-decoration:none}
+.wa-float:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,0.55)}
+
+@media(max-width:900px){
+  .qp-services{grid-template-columns:1fr}
+  .qp-steps{grid-template-columns:repeat(2,1fr)}
+  .qp-process,.qp-form,.qp-hero,.cp-hero,.cp-form-section{padding-left:20px;padding-right:20px}
+  .cp-channels{grid-template-columns:1fr}
+}
 .ferr{text-align:center;padding:12px;color:#e05555;font-size:13px;background:rgba(224,85,85,0.06);border-radius:10px;margin-bottom:10px}
 .ce{display:block;text-align:center;font-size:18px;color:var(--ac);text-decoration:none;margin-bottom:28px;font-weight:500}
 
@@ -1067,7 +1141,7 @@ footer p{font-size:12px;color:var(--fg3)}
         <div className="cg">{P.map(p => {
           const ic = cart.find(c => c.id === p.id && c.cartType === "stl");
           return (<div className="cc" key={p.id}>
-            <div className="ct" onClick={() => goProd(p)}><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke={p.color} strokeWidth="1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div className="ct" onClick={() => goProd(p)}><Viewer color={p.color} active={true} bgColor={0xe8ebf0} /></div>
             <div className="ci"><h3 onClick={() => goProd(p)} style={{cursor:"pointer"}}>{p.name[lang]}</h3><p className="tl">{p.tag[lang]}</p>
               <div className="cf">
                 <div>
@@ -1089,11 +1163,16 @@ footer p{font-size:12px;color:var(--fg3)}
       />}
 
       {/* QUOTE */}
-      {page === "quote" && <QuoteForm t={t} />}
+      {page === "quote" && <QuoteForm t={t} lang={lang} />}
 
       {/* CONTACT */}
       {page === "contact" && <ContactForm t={t} lang={lang} />}
       </div>
+
+      {/* Floating WhatsApp */}
+      <a className="wa-float" href="https://wa.me/50662924815" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.057 23.428a.75.75 0 00.921.921l5.568-1.475A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.964-1.362l-.355-.212-3.683.975.99-3.595-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+      </a>
 
       <footer>
         <div className="fl"><img src="/logo.png" alt="" style={{height:28,marginRight:6,verticalAlign:"middle"}} />Medu <span className="d">3D</span></div>
@@ -1215,42 +1294,106 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    Quote Form — conectado a Formspree
    ═══════════════════════════════════════════════════════════════════════════ */
-function QuoteForm({ t }) {
+function QuoteForm({ t, lang }) {
   const tq = t.quote;
   const { fields, set, submit, status } = useForm(FORMSPREE_ENDPOINT);
+  const es = lang === "es";
+
+  const services = [
+    { icon: "🧬", bg: "#e8f0fb", title: es ? "Segmentación desde CT/MRI" : "CT/MRI Segmentation",
+      desc: es ? "Tomografías y resonancias propias convertidas en modelos 3D de alta fidelidad. Envianos tus archivos DICOM y generamos el modelo de tu caso específico." : "Your own CT or MRI scans converted into high-fidelity 3D models. Send us your DICOM files and we generate the model for your specific case." },
+    { icon: "🎓", bg: "#fef3e8", title: es ? "Modelos Educativos" : "Educational Models",
+      desc: es ? "Anatomía humana estándar lista para usar en aula, laboratorio o presentaciones clínicas. Disponible en STL y OBJ compatibles con cualquier software." : "Standard human anatomy ready for classroom, laboratory or clinical presentations. Available in STL and OBJ compatible with any software." },
+    { icon: "🦾", bg: "#edf8f1", title: es ? "Planificación Quirúrgica" : "Surgical Planning",
+      desc: es ? "Modelos de precisión submilimétrica para visualizar procedimientos, diseñar guías quirúrgicas y mejorar resultados en cirugía ortopédica, maxilofacial y más." : "Sub-millimeter precision models for visualizing procedures, designing surgical guides and improving outcomes in orthopedic, maxillofacial surgery and more." },
+    { icon: "🖨️", bg: "#fce8e8", title: es ? "Impresión 3D Física" : "Physical 3D Printing",
+      desc: es ? "Entregamos maquetas físicas impresas en resina o PLA de alta resolución. Ideal para simulación, enseñanza táctil y comunicación con pacientes." : "We deliver physical models printed in high-resolution resin or PLA. Ideal for simulation, tactile teaching and patient communication." },
+  ];
+
+  const steps = [
+    { num: 1, title: es ? "Envías tus imágenes" : "Send your images",
+      desc: es ? "Subís tus archivos DICOM (CT o MRI) o indicás el modelo anatómico que necesitás" : "Upload your DICOM files (CT or MRI) or specify the anatomical model you need",
+      img: null, placeholder: es ? "Imagen: archivo DICOM en visor" : "Image: DICOM file in viewer" },
+    { num: 2, title: es ? "Segmentación en 3D Slicer" : "Segmentation in 3D Slicer",
+      desc: es ? "Procesamos las imágenes con 3D Slicer delimitando cada estructura anatómica con precisión clínica" : "We process the images with 3D Slicer delineating each anatomical structure with clinical precision",
+      img: null, placeholder: es ? "Imagen: segmentación en 3D Slicer" : "Image: segmentation in 3D Slicer" },
+    { num: 3, title: es ? "Revisión y refinamiento" : "Review and refinement",
+      desc: es ? "Limpiamos la malla 3D, optimizamos para impresión y aplicamos acabado de superficie profesional" : "We clean the 3D mesh, optimize for printing and apply professional surface finishing",
+      img: null, placeholder: es ? "Imagen: modelo refinado en vista 3D" : "Image: refined model in 3D view" },
+    { num: 4, title: es ? "Entrega de archivos" : "File delivery",
+      desc: es ? "Recibes los archivos en STL y OBJ listos para visualizar, imprimir o integrar en tu flujo de trabajo" : "You receive the files in STL and OBJ ready to visualize, print or integrate into your workflow",
+      img: null, placeholder: es ? "Imagen: archivos finales exportados" : "Image: final exported files" },
+  ];
 
   return (
-    <div className="fp">
-      <h2>{tq.title}</h2><p>{tq.subtitle}</p>
-      {status === "sent" ? (
-        <div className="fok">{tq.sent}</div>
-      ) : <>
-        {status === "error" && <div className="ferr">{tq.error}</div>}
-        <input
-          placeholder={tq.name}
-          value={fields.name || ""}
-          onChange={e => set("name", e.target.value)}
-        />
-        <input
-          type="email"
-          placeholder={tq.email}
-          value={fields.email || ""}
-          onChange={e => set("email", e.target.value)}
-        />
-        <textarea
-          placeholder={tq.details}
-          value={fields.message || ""}
-          onChange={e => set("message", e.target.value)}
-        />
-        <input type="hidden" name="_subject" value="Nueva cotización — Medu 3D" />
-        <button
-          className="fs"
-          onClick={submit}
-          disabled={status === "sending"}
-        >
-          {status === "sending" ? tq.sending : tq.send}
-        </button>
-      </>}
+    <div className="qp">
+      {/* Hero */}
+      <div className="qp-hero">
+        <h2>{es ? "Servicios a la Medida" : "Custom Services"}</h2>
+        <p>{es ? "Desde tomografías reales hasta maquetas físicas — adaptamos cada proyecto a tus necesidades clínicas, educativas o de investigación." : "From real CT scans to physical models — we tailor each project to your clinical, educational or research needs."}</p>
+      </div>
+
+      {/* Services grid */}
+      <div className="qp-services">
+        {services.map((s,i) => (
+          <div className="qp-svc" key={i}>
+            <div className="qp-svc-icon" style={{background:s.bg}}>{s.icon}</div>
+            <div><h3>{s.title}</h3><p>{s.desc}</p></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Process steps */}
+      <div className="qp-process">
+        <h3>{es ? "¿Cómo funciona?" : "How does it work?"}</h3>
+        <p>{es ? "Del archivo DICOM al modelo 3D listo para usar en 4 pasos" : "From DICOM file to ready-to-use 3D model in 4 steps"}</p>
+        <div className="qp-steps">
+          {steps.map((s,i) => (
+            <div className="qp-step" key={i}>
+              <div className="qp-step-img">
+                {s.img
+                  ? <img src={s.img} alt={s.title} />
+                  : <div className="qp-step-img-placeholder">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9496ab" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span>{s.placeholder}</span>
+                    </div>
+                }
+              </div>
+              <div className="qp-step-body">
+                <div className="qp-step-num">{s.num}</div>
+                <h4>{s.title}</h4>
+                <p>{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="qp-form">
+        <h3>{es ? "Solicitar Cotización" : "Request a Quote"}</h3>
+        <p>{es ? "Cuéntanos tu proyecto y te respondemos en menos de 24 horas" : "Tell us about your project and we'll respond within 24 hours"}</p>
+        <div className="qp-form-inner">
+          {status === "sent" ? (
+            <div className="fok">{tq.sent}</div>
+          ) : <>
+            {status === "error" && <div className="ferr">{tq.error}</div>}
+            <input placeholder={tq.name} value={fields.name||""} onChange={e=>set("name",e.target.value)} />
+            <input type="email" placeholder={tq.email} value={fields.email||""} onChange={e=>set("email",e.target.value)} />
+            <select value={fields.service||""} onChange={e=>set("service",e.target.value)}>
+              <option value="">{es?"Tipo de servicio":"Service type"}</option>
+              <option value="segmentacion">{es?"Segmentación CT/MRI":"CT/MRI Segmentation"}</option>
+              <option value="educativo">{es?"Modelo educativo":"Educational model"}</option>
+              <option value="quirurgico">{es?"Planificación quirúrgica":"Surgical planning"}</option>
+              <option value="impresion">{es?"Impresión 3D física":"Physical 3D printing"}</option>
+            </select>
+            <textarea placeholder={tq.details} value={fields.message||""} onChange={e=>set("message",e.target.value)} />
+            <button className="fs" onClick={submit} disabled={status==="sending"}>
+              {status==="sending" ? tq.sending : tq.send}
+            </button>
+          </>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1262,40 +1405,72 @@ function ContactForm({ t, lang }) {
   const tc = t.contact;
   const tq = t.quote;
   const { fields, set, submit, status } = useForm(FORMSPREE_ENDPOINT);
+  const es = lang === "es";
+  const WA = "https://wa.me/50662924815";
 
   return (
-    <div className="fp">
-      <h2>{tc.title}</h2><p>{tc.subtitle}</p>
-      <a className="ce" href="mailto:contacto@medu3d.com">contacto@medu3d.com</a>
-      <p style={{textAlign:"center",color:"var(--fg3)",marginBottom:20}}>{tc.or}</p>
-      {status === "sent" ? (
-        <div className="fok">{tc.sent}</div>
-      ) : <>
-        {status === "error" && <div className="ferr">{tc.error}</div>}
-        <input
-          placeholder={tq.name}
-          value={fields.name || ""}
-          onChange={e => set("name", e.target.value)}
-        />
-        <input
-          type="email"
-          placeholder={tq.email}
-          value={fields.email || ""}
-          onChange={e => set("email", e.target.value)}
-        />
-        <textarea
-          placeholder={lang === "es" ? "Tu mensaje" : "Your message"}
-          value={fields.message || ""}
-          onChange={e => set("message", e.target.value)}
-        />
-        <button
-          className="fs"
-          onClick={submit}
-          disabled={status === "sending"}
-        >
-          {status === "sending" ? tc.sending : tc.send}
-        </button>
-      </>}
+    <div className="cp-wrap">
+      {/* Hero */}
+      <div className="cp-hero">
+        <h2>{tc.title}</h2>
+        <p>{es ? "Estamos disponibles para responder tus preguntas por el canal que prefieras." : "We are available to answer your questions through whichever channel you prefer."}</p>
+      </div>
+
+      {/* Channels */}
+      <div className="cp-channels">
+        <div className="cp-channel">
+          <div className="cp-ch-icon" style={{background:"#e7faf0"}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.057 23.428a.75.75 0 00.921.921l5.568-1.475A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.964-1.362l-.355-.212-3.683.975.99-3.595-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+          </div>
+          <h3>WhatsApp</h3>
+          <p>+506 6292 4815<br/>{es?"Respuesta rápida · Lun–Vie":"Quick reply · Mon–Fri"}</p>
+          <a className="cp-ch-btn green" href={WA} target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+            {es ? "Escribir por WhatsApp" : "Message on WhatsApp"}
+          </a>
+        </div>
+
+        <div className="cp-channel">
+          <div className="cp-ch-icon" style={{background:"#e8f0fb"}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0b3c73" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <h3>Email</h3>
+          <p>contacto@medu3d.com<br/>{es?"Respuesta en 24 horas":"24-hour response"}</p>
+          <a className="cp-ch-btn blue" href="mailto:contacto@medu3d.com">
+            {es ? "Enviar email" : "Send email"}
+          </a>
+        </div>
+
+        <div className="cp-channel">
+          <div className="cp-ch-icon" style={{background:"#fce8e8"}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d64830" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <h3>{es?"Cotización":"Quote"}</h3>
+          <p>{es?"¿Necesitas un modelo personalizado?":"Need a custom model?"}<br/>{es?"Te preparamos una propuesta":"We'll prepare a proposal"}</p>
+          <button className="cp-ch-btn coral" onClick={() => window.dispatchEvent(new CustomEvent('goQuote'))}>
+            {es ? "Solicitar cotización" : "Request quote"}
+          </button>
+        </div>
+      </div>
+
+      {/* Message form */}
+      <div className="cp-form-section">
+        <h3>{es?"Envíanos un mensaje":"Send us a message"}</h3>
+        <p>{es?"También puedes escribirnos directamente aquí":"You can also write to us directly here"}</p>
+        <div className="cp-form-inner">
+          {status === "sent" ? (
+            <div className="fok">{tc.sent}</div>
+          ) : <>
+            {status === "error" && <div className="ferr">{tc.error}</div>}
+            <input placeholder={tq.name} value={fields.name||""} onChange={e=>set("name",e.target.value)} />
+            <input type="email" placeholder={tq.email} value={fields.email||""} onChange={e=>set("email",e.target.value)} />
+            <textarea placeholder={es?"Tu mensaje":"Your message"} value={fields.message||""} onChange={e=>set("message",e.target.value)} />
+            <button className="fs" onClick={submit} disabled={status==="sending"}>
+              {status==="sending" ? tc.sending : tc.send}
+            </button>
+          </>}
+        </div>
+      </div>
     </div>
   );
 }
