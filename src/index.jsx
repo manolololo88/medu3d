@@ -10,7 +10,7 @@ const PAYPAL_CLIENT_ID = "ARguyNA3-2Hr-J5fgk9nuSxNnAe6Bd4YD7yxccFcHpmN05eMOQiQ7x
 
 // Formspree endpoint — crea cuenta en formspree.io y reemplaza con tu ID
 // Ejemplo: "https://formspree.io/f/xpzgkwer"
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeerrvre";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    i18n
