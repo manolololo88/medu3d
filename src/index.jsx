@@ -17,7 +17,7 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeerrvre";
    ═══════════════════════════════════════════════════════════════════════════ */
 const T = {
   es: {
-    nav: { catalog: "Catálogo", quote: "Cotización", contact: "Contacto", cart: "Carrito" },
+    nav: { catalog: "Catálogo", quote: "Cotización", contact: "Contacto", cart: "Carrito", about: "Sobre mí" },
     hero: { explore: "Ver detalles", badge: "Desde CT & MRI reales" },
     about: {
       title: "¿Qué es Medu 3D?",
@@ -58,7 +58,7 @@ const T = {
     footer: { tag: "Modelos anatómicos 3D de precisión clínica.", rights: "Todos los derechos reservados." },
   },
   en: {
-    nav: { catalog: "Catalog", quote: "Quote", contact: "Contact", cart: "Cart" },
+    nav: { catalog: "Catalog", quote: "Quote", contact: "Contact", cart: "Cart", about: "About" },
     hero: { explore: "View details", badge: "From real CT & MRI" },
     about: {
       title: "What is Medu 3D?",
@@ -110,7 +110,7 @@ const T = {
    4. Para geo nuevos sin placeholder, usa "sphere" como fallback temporal
    ─────────────────────────────────────────────────────────────────────────── */
 const P = [
-  { id: "heart",
+  { id: "heart", modelId: "model",
     priceSlt: 54.99, pricePrint: null,
     hostedBtn: "MDVGEXSZCHEQY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e05555", geo: "heart",
@@ -118,7 +118,7 @@ const P = [
     tag: { es: "4 cámaras · Válvulas · Grandes vasos", en: "4 chambers · Valves · Great vessels" },
     desc: { es: "Modelo detallado del corazón humano completo con las 4 cámaras cardíacas, válvulas y grandes vasos. Segmentado desde CT con contraste. Ideal para educación cardiovascular y planificación quirúrgica.", en: "Detailed model of the complete human heart with all 4 cardiac chambers, valves and great vessels. Segmented from contrast CT. Ideal for cardiovascular education and surgical planning." },
   },
-  { id: "brain",
+  { id: "brain", modelId: "model",
     priceSlt: 49.99, pricePrint: null,
     hostedBtn: "49659K538LTZ6", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c98a90", geo: "brain",
@@ -126,7 +126,7 @@ const P = [
     tag: { es: "Hemisferios · Surcos · Cerebelo", en: "Hemispheres · Sulci · Cerebellum" },
     desc: { es: "Modelo cerebral con surcos y circunvoluciones detalladas, hemisferios separados, cerebelo y tronco encefálico. Segmentado desde MRI T1. Para neurociencia y educación.", en: "Brain model with detailed sulci and gyri, separated hemispheres, cerebellum and brainstem. Segmented from T1 MRI. For neuroscience and education." },
   },
-  { id: "lungs",
+  { id: "lungs", modelId: "model",
     priceSlt: 49.99, pricePrint: null,
     hostedBtn: "8BZZW5EGQNZAJ", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e8a0b0", geo: "lungs",
@@ -134,7 +134,7 @@ const P = [
     tag: { es: "Pulmón izq. y der. · Árbol bronquial", en: "Left & right lung · Bronchial tree" },
     desc: { es: "Modelo de pulmones con diferenciación de pulmón izquierdo y derecho, árbol bronquial y estructuras vasculares. Segmentado desde CT de tórax. Para neumología y educación médica.", en: "Lung model with differentiated left and right lungs, bronchial tree and vascular structures. Segmented from chest CT. For pulmonology and medical education." },
   },
-  { id: "liver",
+  { id: "liver", modelId: "model",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "FJJB3XH8FURZY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5703a", geo: "liver",
@@ -142,7 +142,7 @@ const P = [
     tag: { es: "Lóbulos · Vesícula · Vasculatura", en: "Lobes · Gallbladder · Vasculature" },
     desc: { es: "Modelo hepático con segmentación de lóbulos, vesícula biliar y vasculatura portal y hepática. Segmentado desde CT con contraste. Para hepatología y cirugía.", en: "Hepatic model with lobe segmentation, gallbladder and portal and hepatic vasculature. Segmented from contrast CT. For hepatology and surgery." },
   },
-  { id: "skull",
+  { id: "skull", modelId: "model",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "C757MAF6AM8YA", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c4a882", geo: "skull",
@@ -150,7 +150,7 @@ const P = [
     tag: { es: "Mandíbula articulada · Alta resolución", en: "Articulated mandible · High resolution" },
     desc: { es: "Cráneo completo con mandíbula separable. Incluye suturas craneales, forámenes y procesos óseos. Segmentado desde CT de alta resolución (0.5mm). Para educación anatómica y odontología.", en: "Complete skull with separable mandible. Includes cranial sutures, foramina and bony processes. Segmented from high-resolution CT (0.5mm). For anatomical education and dentistry." },
   },
-  { id: "hand",
+  { id: "hand", modelId: "model",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "6U65AC2JJEXFL", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#d4b896", geo: "hand",
@@ -158,7 +158,7 @@ const P = [
     tag: { es: "27 huesos · Carpo · Metacarpo · Falanges", en: "27 bones · Carpals · Metacarpals · Phalanges" },
     desc: { es: "Conjunto completo de los 27 huesos de la mano: huesos del carpo, metacarpianos y falanges. Segmentado desde CT de alta resolución. Ideal para cirugía ortopédica y traumatología.", en: "Complete set of 27 hand bones: carpal bones, metacarpals and phalanges. Segmented from high-resolution CT. Ideal for orthopedic surgery and traumatology." },
   },
-  { id: "foot",
+  { id: "foot", modelId: "model",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
@@ -166,7 +166,7 @@ const P = [
     tag: { es: "26 huesos · Tarso · Metatarso · Falanges", en: "26 bones · Tarsals · Metatarsals · Phalanges" },
     desc: { es: "Conjunto completo de los 26 huesos del pie: tarso, metatarsianos y falanges. Segmentado desde CT. Para podología, ortopedia y biomecánica.", en: "Complete set of 26 foot bones: tarsals, metatarsals and phalanges. Segmented from CT. For podiatry, orthopedics and biomechanics." },
   },
-  { id: "spine",
+  { id: "spine", modelId: "vertebras",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "637LDGMDRNE5N", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#7a8fa3", geo: "spine",
@@ -174,7 +174,7 @@ const P = [
     tag: { es: "L1-L5 · Discos intervertebrales", en: "L1-L5 · Intervertebral discs" },
     desc: { es: "Vértebras L1-L5 con discos intervertebrales diferenciados. Detalle de procesos espinosos, transversos y articulares. Para estudio ortopédico y quirúrgico.", en: "L1-L5 vertebrae with differentiated intervertebral discs. Detail of spinous, transverse and articular processes. For orthopedic and surgical study." },
   },
-  { id: "kidney",
+  { id: "kidney", modelId: "rinones",
     priceSlt: 39.99, pricePrint: null,
     hostedBtn: "22N8FEKMP8FAY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#9e6b5a", geo: "kidney",
@@ -182,7 +182,7 @@ const P = [
     tag: { es: "Arterias · Venas renales · Uréter", en: "Arteries · Renal veins · Ureter" },
     desc: { es: "Riñón con arterias y venas renales diferenciadas, uréter y cápsula renal. Para nefrología, urología y educación.", en: "Kidney with color-differentiated renal arteries and veins, ureter and renal capsule. For nephrology, urology and education." },
   },
-  { id: "pelvis",
+  { id: "pelvis", modelId: "pelvis",
     priceSlt: 39.99, pricePrint: null,
     hostedBtn: "UCHEK3PJFQMBW", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5a48a", geo: "pelvis",
@@ -614,7 +614,7 @@ function parseGLB(buf) {
   return { pos, nor };
 }
 
-function Viewer({ color, active, hd = false, interact = false, bgColor = 0xeef1f5 }) {
+function Viewer({ color, active, hd = false, modelId = "model", interact = false, bgColor = 0xeef1f5 }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!active || !ref.current) return;
@@ -636,7 +636,7 @@ function Viewer({ color, active, hd = false, interact = false, bgColor = 0xeef1f
     const l2 = new THREE.DirectionalLight(0x8899bb, 0.6); l2.position.set(-4,-2,3); scene.add(l2);
     const l3 = new THREE.DirectionalLight(0xffffff, 0.3); l3.position.set(0,-5,0); scene.add(l3);
 
-    const url = hd ? "/model_hd.glb" : "/model.stl";
+    const url = hd ? `/${modelId}_hd.glb` : `/${modelId}.stl`;
     fetch(url).then(res => res.arrayBuffer()).then(buf => {
       if (!alive) return;
       let parsed;
@@ -681,7 +681,7 @@ function Viewer({ color, active, hd = false, interact = false, bgColor = 0xeef1f
     const onR = ()=>{ if(!alive)return; const nw=c.clientWidth,nh=c.clientHeight; cam.aspect=nw/nh; cam.updateProjectionMatrix(); r.setSize(nw,nh); };
     window.addEventListener("resize", onR);
     return ()=>{ alive=false; cancelAnimationFrame(aid); window.removeEventListener("resize",onR); r.dispose(); try{if(c.contains(r.domElement))c.removeChild(r.domElement);}catch(e){} };
-  }, [active, color, hd, interact, bgColor]);
+  }, [active, color, hd, modelId, interact, bgColor]);
 
   return <div ref={ref} style={{width:"100%",height:"100%"}} />;
 }
@@ -964,6 +964,70 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 .cp-form-inner textarea{min-height:110px;resize:vertical}
 .cp-form-inner input::placeholder,.cp-form-inner textarea::placeholder{color:var(--fg3)}
 
+/* SERVICES SECTION (landing) */
+.svcs{padding:96px 60px;background:var(--bg2)}
+.svcs-h{text-align:center;margin-bottom:56px}
+.svcs-h h2{font-size:clamp(26px,3.5vw,42px);margin-bottom:12px;font-weight:700}
+.svcs-h p{color:var(--fg2);font-size:15px;max-width:540px;margin:0 auto}
+.svcs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1080px;margin:0 auto 40px}
+.svc-card{background:var(--bg);border:1px solid rgba(11,60,115,0.08);border-radius:20px;padding:32px 26px;transition:all .3s;position:relative;overflow:hidden}
+.svc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0b3c73,#d64830);opacity:0;transition:.3s}
+.svc-card:hover{border-color:rgba(11,60,115,0.2);box-shadow:var(--sh);transform:translateY(-4px)}
+.svc-card:hover::before{opacity:1}
+.svc-icon{font-size:32px;margin-bottom:16px}
+.svc-card h3{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--fg)}
+.svc-card p{font-size:13px;color:var(--fg2);line-height:1.65;margin-bottom:16px}
+.svc-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;background:var(--navys);color:var(--navy,#0b3c73)}
+.svcs-cta{text-align:center}
+.svcs-cta-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:var(--navy,#0b3c73);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .25s}
+.svcs-cta-btn:hover{background:#0d4a8e;transform:translateY(-2px);box-shadow:0 8px 28px rgba(11,60,115,.25)}
+
+/* ABOUT PAGE */
+.ap{padding:0 0 80px;max-width:1100px;margin:0 auto}
+.ap-hero{background:linear-gradient(135deg,#0b3c73 0%,#071e3d 100%);padding:80px 60px;display:grid;grid-template-columns:1fr 320px;gap:60px;align-items:center;position:relative;overflow:hidden}
+.ap-hero::before{content:'';position:absolute;right:-100px;top:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(214,72,48,0.12),transparent 65%);pointer-events:none}
+.ap-hero-text h1{font-size:clamp(28px,4vw,48px);color:#fff;font-weight:800;margin-bottom:6px;letter-spacing:-0.5px}
+.ap-hero-text h2{font-size:16px;color:rgba(255,255,255,0.55);font-weight:500;margin-bottom:24px;letter-spacing:.5px;text-transform:uppercase}
+.ap-quote{font-size:16px;color:rgba(255,255,255,0.85);line-height:1.7;font-style:italic;border-left:3px solid #d64830;padding-left:20px;font-weight:300}
+.ap-photo{width:280px;height:320px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ap-photo img{width:100%;height:100%;object-fit:cover}
+.ap-photo-placeholder{display:flex;flex-direction:column;align-items:center;gap:12px;color:rgba(255,255,255,0.35)}
+.ap-photo-placeholder svg{opacity:.5}
+.ap-photo-placeholder span{font-size:12px;font-weight:600;letter-spacing:.5px}
+.ap-body{padding:60px 60px 0;display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.ap-section h3{font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--navy,#0b3c73);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.ap-section h3::after{content:'';flex:1;height:1px;background:rgba(11,60,115,0.12)}
+.ap-exp{display:flex;flex-direction:column;gap:20px}
+.ap-exp-item{display:flex;gap:16px;align-items:flex-start}
+.ap-exp-dot{width:10px;height:10px;border-radius:50%;background:var(--ac,#d64830);flex-shrink:0;margin-top:5px}
+.ap-exp-item h4{font-size:14px;font-weight:700;color:var(--fg);margin-bottom:2px}
+.ap-exp-item .ap-org{font-size:12px;color:var(--navy,#0b3c73);font-weight:600;margin-bottom:4px}
+.ap-exp-item .ap-yr{font-size:11px;color:var(--fg3);font-weight:500;margin-bottom:6px}
+.ap-exp-item p{font-size:12px;color:var(--fg2);line-height:1.6}
+.ap-skills{display:flex;flex-direction:column;gap:14px}
+.ap-skill-group h4{font-size:12px;font-weight:700;color:var(--fg);margin-bottom:8px;letter-spacing:.3px}
+.ap-skill-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ap-skill-tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(11,60,115,0.08)}
+.ap-certs{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ap-cert{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--fg2)}
+.ap-cert-dot{width:8px;height:8px;border-radius:50%;background:var(--navy,#0b3c73);flex-shrink:0}
+.ap-cta{margin:48px 60px 0;background:linear-gradient(135deg,#0b3c73,#0a2d5a);border-radius:20px;padding:40px 48px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.ap-cta h3{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+.ap-cta p{font-size:14px;color:rgba(255,255,255,0.6)}
+.ap-cta-btns{display:flex;gap:12px;flex-shrink:0}
+.ap-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;text-decoration:none;border:none}
+.ap-cta-btn.primary{background:#d64830;color:#fff}.ap-cta-btn.primary:hover{background:#e85a40}
+.ap-cta-btn.secondary{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)}.ap-cta-btn.secondary:hover{background:rgba(255,255,255,0.18)}
+@media(max-width:900px){
+  .svcs{padding:60px 20px}
+  .svcs-grid{grid-template-columns:1fr}
+  .ap-hero{grid-template-columns:1fr;padding:48px 20px}
+  .ap-photo{width:100%;height:220px}
+  .ap-body{grid-template-columns:1fr;padding:32px 20px 0}
+  .ap-cta{flex-direction:column;margin:32px 20px 0;padding:32px 24px}
+  .ap-cta-btns{flex-direction:column;width:100%}
+}
+
 /* FLOATING WHATSAPP */
 .wa-float{position:fixed;bottom:28px;right:28px;z-index:400;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.45);cursor:pointer;transition:all .25s;text-decoration:none}
 .wa-float:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,0.55)}
@@ -1043,6 +1107,7 @@ footer p{font-size:12px;color:var(--fg3)}
         <ul className="nl">
           <li><button className={`nb ${page === "catalog" ? "on" : ""}`} onClick={() => goPage("catalog")}>{t.nav.catalog}</button></li>
           <li><button className={`nb ${page === "quote" ? "on" : ""}`} onClick={() => goPage("quote")}>{t.nav.quote}</button></li>
+          <li><button className={`nb ${page === "about" ? "on" : ""}`} onClick={() => goPage("about")}>{t.nav.about}</button></li>
           <li><button className={`nb ${page === "contact" ? "on" : ""}`} onClick={() => goPage("contact")}>{t.nav.contact}</button></li>
           <li><button className="nb" onClick={() => setCartOpen(true)}>{t.nav.cart}{cart.length > 0 && <span className="cb">{cart.length}</span>}</button></li>
           <li><button className="lb" onClick={() => setLang(lang === "es" ? "en" : "es")}>{lang === "es" ? "EN" : "ES"}</button></li>
@@ -1054,6 +1119,7 @@ footer p{font-size:12px;color:var(--fg3)}
       <div className={`mm ${menuOpen ? "open" : ""}`}>
         <button onClick={() => goPage("catalog")}>{t.nav.catalog}</button>
         <button onClick={() => goPage("quote")}>{t.nav.quote}</button>
+        <button onClick={() => goPage("about")}>{t.nav.about}</button>
         <button onClick={() => goPage("contact")}>{t.nav.contact}</button>
         <button onClick={() => { setCartOpen(true); setMenuOpen(false); }}>{t.nav.cart} {cart.length > 0 && `(${cart.length})`}</button>
         <button className="lb" onClick={() => { setLang(lang === "es" ? "en" : "es"); setMenuOpen(false); }}>{lang === "es" ? "English" : "Español"}</button>
@@ -1106,7 +1172,7 @@ footer p{font-size:12px;color:var(--fg3)}
           </div>
           <div className="hero-right" onClick={() => goProd(cur)}>
             <div className={`model-wrap ${modelState}`} key={hi}>
-              <Viewer color={cur.color} active={true} bgColor={0xeef1f5} />
+              <Viewer color={cur.color} active={true} modelId={cur.modelId} bgColor={0xeef1f5} />
             </div>
           </div>
         </div>
@@ -1133,6 +1199,36 @@ footer p{font-size:12px;color:var(--fg3)}
             ))}
           </div>
         </div>
+
+        {/* SERVICES SECTION */}
+        <div className="svcs">
+          <div className="svcs-h">
+            <h2>{lang === "es" ? "Servicios Especializados" : "Specialized Services"}</h2>
+            <p>{lang === "es" ? "Más allá de los modelos estándar — soluciones a la medida para cada proyecto médico o ingenieril." : "Beyond standard models — tailored solutions for every medical or engineering project."}</p>
+          </div>
+          <div className="svcs-grid">
+            {[
+              { icon:"🧬", tag: lang==="es"?"Personalizado":"Custom", title: lang==="es"?"Segmentación CT/MRI":"CT/MRI Segmentation", desc: lang==="es"?"Convertimos tus imágenes DICOM en modelos 3D de precisión clínica. Cada estructura anatómica segmentada con detalle para tu caso específico.":"We convert your DICOM images into clinical-precision 3D models. Each anatomical structure segmented in detail for your specific case." },
+              { icon:"🦴", tag: lang==="es"?"Cirugía":"Surgery", title: lang==="es"?"Planificación Quirúrgica":"Surgical Planning", desc: lang==="es"?"Modelos submilimétricos para visualizar procedimientos, diseñar guías quirúrgicas y mejorar resultados en reconstrucción ósea y cirugía ortopédica.":"Sub-millimeter models to visualize procedures, design surgical guides and improve outcomes in bone reconstruction and orthopedic surgery." },
+              { icon:"🦾", tag: lang==="es"?"Rehabilitación":"Rehab", title: lang==="es"?"Férulas Personalizadas":"Custom Orthoses", desc: lang==="es"?"Diseño y fabricación de férulas a medida desde escaneo 3D del paciente. Mayor confort, mejor ajuste y tiempo de fabricación reducido.":"Design and fabrication of custom splints from 3D patient scanning. Greater comfort, better fit and reduced manufacturing time." },
+              { icon:"🖨️", tag: lang==="es"?"Fabricación":"Manufacturing", title: lang==="es"?"Impresión 3D Médica e Ingenieril":"Medical & Engineering 3D Printing", desc: lang==="es"?"FDM, SLA y SLS para prototipos, piezas funcionales y modelos anatómicos. Materiales biocompatibles disponibles para aplicaciones clínicas.":"FDM, SLA and SLS for prototypes, functional parts and anatomical models. Biocompatible materials available for clinical applications." },
+              { icon:"📐", tag: lang==="es"?"Asesoría":"Advisory", title: lang==="es"?"Asesoría en Modelado 3D":"3D Modeling Advisory", desc: lang==="es"?"Consultoría técnica para equipos médicos e ingenieros que necesitan integrar el modelado 3D y la impresión en su flujo de trabajo clínico o industrial.":"Technical consulting for medical teams and engineers needing to integrate 3D modeling and printing into their clinical or industrial workflow." },
+              { icon:"🔬", tag: lang==="es"?"I+D":"R&D", title: lang==="es"?"Proyectos de Investigación":"Research Projects", desc: lang==="es"?"Colaboración en proyectos académicos y de I+D que requieran prototipado rápido, modelado anatómico o desarrollo de dispositivos biomédicos.":"Collaboration on academic and R&D projects requiring rapid prototyping, anatomical modeling or biomedical device development." },
+            ].map((s,i) => (
+              <div className="svc-card" key={i}>
+                <div className="svc-icon">{s.icon}</div>
+                <div className="svc-tag">{s.tag}</div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="svcs-cta">
+            <button className="svcs-cta-btn" onClick={() => goPage("quote")}>
+              {lang === "es" ? "Solicitar cotización personalizada →" : "Request a custom quote →"}
+            </button>
+          </div>
+        </div>
       </>}
 
       {/* CATALOG */}
@@ -1141,7 +1237,7 @@ footer p{font-size:12px;color:var(--fg3)}
         <div className="cg">{P.map(p => {
           const ic = cart.find(c => c.id === p.id && c.cartType === "stl");
           return (<div className="cc" key={p.id}>
-            <div className="ct" onClick={() => goProd(p)}><Viewer color={p.color} active={true} bgColor={0xe8ebf0} /></div>
+            <div className="ct" onClick={() => goProd(p)}><Viewer color={p.color} active={true} modelId={p.modelId} bgColor={0xe8ebf0} /></div>
             <div className="ci"><h3 onClick={() => goProd(p)} style={{cursor:"pointer"}}>{p.name[lang]}</h3><p className="tl">{p.tag[lang]}</p>
               <div className="cf">
                 <div>
@@ -1161,6 +1257,9 @@ footer p{font-size:12px;color:var(--fg3)}
         addCart={addCart} onPaySuccess={handlePaymentSuccess}
         goPage={goPage}
       />}
+
+      {/* ABOUT */}
+      {page === "about" && <AboutPage lang={lang} />}
 
       {/* QUOTE */}
       {page === "quote" && <QuoteForm t={t} lang={lang} />}
@@ -1200,7 +1299,7 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
       <button className="pd-b" onClick={() => goPage("catalog")}>{tc.back}</button>
       <div className="pd-l">
         <div className="pd-v">
-          <Viewer color={prod.color} active={true} hd={true} interact={true} bgColor={0xeef1f5} />
+          <Viewer color={prod.color} active={true} hd={true} modelId={prod.modelId} interact={true} bgColor={0xeef1f5} />
         </div>
         <div className="pd-i">
           <h1>{prod.name[lang]}</h1>
@@ -1285,6 +1384,134 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
           )}
 
           <p className="pd-h">{tc.rotate}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   About Page
+   ═══════════════════════════════════════════════════════════════════════════ */
+function AboutPage({ lang }) {
+  const es = lang === "es";
+
+  const experience = [
+    { title: es?"Pasante Biomédico":"Biomedical Intern", org:"CENADET — Centro Nacional para la Detección Temprana", year:"2025", desc: es?"Mantenimiento preventivo y correctivo de más de 15 equipos de diagnóstico (rayos X, ecógrafos, mamógrafos). Documentación de métricas de rendimiento y optimización de flujos de trabajo.":"Preventive and corrective maintenance of 15+ diagnostic devices (X-ray, ultrasound, mammography). Performance metrics documentation and workflow optimization." },
+    { title: es?"Pasante en Rehabilitación":"Rehabilitation Intern", org:"Bendizione Centro de Neurociencia", year:"2025", desc: es?"Evaluaciones biomecánicas en más de 20 pacientes con Kinovea. Análisis cuantitativo para ajustes de protocolo terapéutico. Pruebas de prototipo del modelo de simulación REBOA.":"Biomechanical assessments on 20+ patients using Kinovea. Quantitative data analysis for therapeutic protocol adjustments. REBOA simulation model prototype testing." },
+    { title: es?"Pasante I+D":"R&D Intern", org:"Innovatio Laboratory — INA", year:"2025", desc: es?"Fabricación de prototipos funcionales con FDM, SLA y escaneo 3D. Traducción de especificaciones de diseño a componentes físicos con verificación dimensional.":"Functional prototype fabrication using FDM, SLA and 3D scanning. Translation of design specifications into physical components with dimensional verification." },
+    { title: es?"Desarrollador Principal — IA/Robótica":"Lead Developer — AI/Robotics", org:"Proyecto Giiro", year:"2023–2025", desc: es?"Asistente robótico con seguimiento facial en tiempo real (OpenCV + CNN) e inferencia CUDA en Jetson Orin Nano. Diseño mecánico en Fusion 360, servocontrol y síntesis de voz.":"Robotic assistant with real-time facial tracking (OpenCV + CNN) and CUDA inference on Jetson Orin Nano. Mechanical design in Fusion 360, servo control and speech synthesis." },
+  ];
+
+  const skillGroups = [
+    { label: es?"Modelado & Fabricación 3D":"3D Modeling & Fabrication", tags:["3D Slicer","Fusion 360","FDM / SLA / SLS","Escaneo 3D","Prototipado rápido"] },
+    { label: es?"IA & Sistemas Integrados":"AI & Embedded Systems", tags:["Python","PyTorch","OpenCV","CUDA","NVIDIA Jetson","Raspberry Pi"] },
+    { label: es?"Calidad & Normativa":"Quality & Regulatory", tags:["ISO 13485","FDA 21 CFR 820","FMEA","DHF","Verificación/Validación"] },
+    { label: es?"Análisis & Herramientas":"Analysis & Tools", tags:["MATLAB","Minitab","Power BI","Kinovea","Adobe Suite"] },
+  ];
+
+  return (
+    <div className="ap">
+      {/* Hero */}
+      <div className="ap-hero">
+        <div className="ap-hero-text">
+          <h1>Manuel Castillo</h1>
+          <h2>{es ? "Ingeniero Biomédico · Fundador de Medu 3D" : "Biomedical Engineer · Founder of Medu 3D"}</h2>
+          <p className="ap-quote">
+            {es
+              ? "El modelado e impresión 3D están abriendo puertas a avances médicos que antes parecían imposibles. Al dominar estas herramientas, quise hacer algo simple pero poderoso: democratizar el acceso a la anatomía de precisión, y ponerla al alcance de quienes realmente la necesitan."
+              : "3D modeling and printing are opening doors to medical advances that once seemed impossible. By mastering these tools, I wanted to do something simple yet powerful: democratize access to precision anatomy, and put it within reach of those who truly need it."}
+          </p>
+        </div>
+        <div className="ap-photo">
+          <div className="ap-photo-placeholder">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span>{es ? "Tu foto aquí" : "Your photo here"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="ap-body">
+        {/* Experience */}
+        <div className="ap-section">
+          <h3>{es ? "Experiencia" : "Experience"}</h3>
+          <div className="ap-exp">
+            {experience.map((e,i) => (
+              <div className="ap-exp-item" key={i}>
+                <div className="ap-exp-dot" />
+                <div>
+                  <h4>{e.title}</h4>
+                  <div className="ap-org">{e.org}</div>
+                  <div className="ap-yr">{e.year}</div>
+                  <p>{e.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Skills + Education + Certs */}
+        <div className="ap-section">
+          <h3>{es ? "Formación" : "Education"}</h3>
+          <div className="ap-exp" style={{marginBottom:32}}>
+            <div className="ap-exp-item">
+              <div className="ap-exp-dot" />
+              <div>
+                <h4>{es ? "Licenciatura en Ingeniería Biomédica" : "BSc in Biomedical Engineering"}</h4>
+                <div className="ap-org">ULACIT — Universidad Latinoamericana de Ciencia y Tecnología</div>
+                <div className="ap-yr">2021 – 2025</div>
+              </div>
+            </div>
+            <div className="ap-exp-item">
+              <div className="ap-exp-dot" />
+              <div>
+                <h4>{es ? "Especialidad en Diseño Gráfico" : "Graphic Design Specialization"}</h4>
+                <div className="ap-org">ABC Bilingual School</div>
+                <div className="ap-yr">2019 – 2021</div>
+              </div>
+            </div>
+          </div>
+
+          <h3>{es ? "Habilidades" : "Skills"}</h3>
+          <div className="ap-skills">
+            {skillGroups.map((g,i) => (
+              <div className="ap-skill-group" key={i}>
+                <h4>{g.label}</h4>
+                <div className="ap-skill-tags">
+                  {g.tags.map((tag,j) => <span className="ap-skill-tag" key={j}>{tag}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{marginTop:28}}>
+            <h3>{es ? "Certificaciones" : "Certifications"}</h3>
+            <div className="ap-certs">
+              {[
+                "TOEFL ITP C1 — 617",
+                es?"Lean Six Sigma Yellow Belt (en progreso)":"Lean Six Sigma Yellow Belt (in progress)",
+                es?"ISO 13485:2016 Foundations (en progreso)":"ISO 13485:2016 Foundations (in progress)",
+              ].map((cert,i) => (
+                <div className="ap-cert" key={i}>
+                  <div className="ap-cert-dot" />
+                  <span>{cert}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="ap-cta">
+        <div>
+          <h3>{es ? "¿Tienes un proyecto en mente?" : "Have a project in mind?"}</h3>
+          <p>{es ? "Hablemos — cada caso es único y me encanta resolver retos técnicos." : "Let's talk — every case is unique and I love solving technical challenges."}</p>
+        </div>
+        <div className="ap-cta-btns">
+          <a className="ap-cta-btn primary" href="https://wa.me/50662924815" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a className="ap-cta-btn secondary" href="mailto:contacto@medu3d.com">contacto@medu3d.com</a>
         </div>
       </div>
     </div>
