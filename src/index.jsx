@@ -114,6 +114,7 @@ const P = [
     priceSlt: 54.99, pricePrint: null,
     hostedBtn: "MDVGEXSZCHEQY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e05555", geo: "heart",
+    region: "torax", tissue: "cardiovascular",
     name: { es: "Corazón Humano", en: "Human Heart" },
     tag: { es: "4 cámaras · Válvulas · Grandes vasos", en: "4 chambers · Valves · Great vessels" },
     desc: { es: "Modelo detallado del corazón humano completo con las 4 cámaras cardíacas, válvulas y grandes vasos. Segmentado desde CT con contraste. Ideal para educación cardiovascular y planificación quirúrgica.", en: "Detailed model of the complete human heart with all 4 cardiac chambers, valves and great vessels. Segmented from contrast CT. Ideal for cardiovascular education and surgical planning." },
@@ -122,6 +123,7 @@ const P = [
     priceSlt: 49.99, pricePrint: null,
     hostedBtn: "49659K538LTZ6", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c98a90", geo: "brain",
+    region: "cabeza", tissue: "nervioso",
     name: { es: "Cerebro", en: "Brain" },
     tag: { es: "Hemisferios · Surcos · Cerebelo", en: "Hemispheres · Sulci · Cerebellum" },
     desc: { es: "Modelo cerebral con surcos y circunvoluciones detalladas, hemisferios separados, cerebelo y tronco encefálico. Segmentado desde MRI T1. Para neurociencia y educación.", en: "Brain model with detailed sulci and gyri, separated hemispheres, cerebellum and brainstem. Segmented from T1 MRI. For neuroscience and education." },
@@ -130,6 +132,7 @@ const P = [
     priceSlt: 49.99, pricePrint: null,
     hostedBtn: "8BZZW5EGQNZAJ", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e8a0b0", geo: "lungs",
+    region: "torax", tissue: "respiratorio",
     name: { es: "Pulmones", en: "Lungs" },
     tag: { es: "Pulmón izq. y der. · Árbol bronquial", en: "Left & right lung · Bronchial tree" },
     desc: { es: "Modelo de pulmones con diferenciación de pulmón izquierdo y derecho, árbol bronquial y estructuras vasculares. Segmentado desde CT de tórax. Para neumología y educación médica.", en: "Lung model with differentiated left and right lungs, bronchial tree and vascular structures. Segmented from chest CT. For pulmonology and medical education." },
@@ -138,6 +141,7 @@ const P = [
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "FJJB3XH8FURZY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5703a", geo: "liver",
+    region: "abdomen", tissue: "visceral",
     name: { es: "Hígado", en: "Liver" },
     tag: { es: "Lóbulos · Vesícula · Vasculatura", en: "Lobes · Gallbladder · Vasculature" },
     desc: { es: "Modelo hepático con segmentación de lóbulos, vesícula biliar y vasculatura portal y hepática. Segmentado desde CT con contraste. Para hepatología y cirugía.", en: "Hepatic model with lobe segmentation, gallbladder and portal and hepatic vasculature. Segmented from contrast CT. For hepatology and surgery." },
@@ -146,6 +150,7 @@ const P = [
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "C757MAF6AM8YA", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c4a882", geo: "skull",
+    region: "cabeza", tissue: "oseo",
     name: { es: "Cráneo Adulto", en: "Adult Skull" },
     tag: { es: "Mandíbula articulada · Alta resolución", en: "Articulated mandible · High resolution" },
     desc: { es: "Cráneo completo con mandíbula separable. Incluye suturas craneales, forámenes y procesos óseos. Segmentado desde CT de alta resolución (0.5mm). Para educación anatómica y odontología.", en: "Complete skull with separable mandible. Includes cranial sutures, foramina and bony processes. Segmented from high-resolution CT (0.5mm). For anatomical education and dentistry." },
@@ -154,6 +159,7 @@ const P = [
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "6U65AC2JJEXFL", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#d4b896", geo: "hand",
+    region: "extremidades", tissue: "oseo",
     name: { es: "Huesos de la Mano", en: "Hand Bones" },
     tag: { es: "27 huesos · Carpo · Metacarpo · Falanges", en: "27 bones · Carpals · Metacarpals · Phalanges" },
     desc: { es: "Conjunto completo de los 27 huesos de la mano: huesos del carpo, metacarpianos y falanges. Segmentado desde CT de alta resolución. Ideal para cirugía ortopédica y traumatología.", en: "Complete set of 27 hand bones: carpal bones, metacarpals and phalanges. Segmented from high-resolution CT. Ideal for orthopedic surgery and traumatology." },
@@ -162,6 +168,7 @@ const P = [
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
+    region: "extremidades", tissue: "oseo",
     name: { es: "Huesos del Pie", en: "Foot Bones" },
     tag: { es: "26 huesos · Tarso · Metatarso · Falanges", en: "26 bones · Tarsals · Metatarsals · Phalanges" },
     desc: { es: "Conjunto completo de los 26 huesos del pie: tarso, metatarsianos y falanges. Segmentado desde CT. Para podología, ortopedia y biomecánica.", en: "Complete set of 26 foot bones: tarsals, metatarsals and phalanges. Segmented from CT. For podiatry, orthopedics and biomechanics." },
@@ -170,6 +177,7 @@ const P = [
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "637LDGMDRNE5N", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#7a8fa3", geo: "spine",
+    region: "columna", tissue: "oseo",
     name: { es: "Columna Lumbar", en: "Lumbar Spine" },
     tag: { es: "L1-L5 · Discos intervertebrales", en: "L1-L5 · Intervertebral discs" },
     desc: { es: "Vértebras L1-L5 con discos intervertebrales diferenciados. Detalle de procesos espinosos, transversos y articulares. Para estudio ortopédico y quirúrgico.", en: "L1-L5 vertebrae with differentiated intervertebral discs. Detail of spinous, transverse and articular processes. For orthopedic and surgical study." },
@@ -178,6 +186,7 @@ const P = [
     priceSlt: 39.99, pricePrint: null,
     hostedBtn: "22N8FEKMP8FAY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#9e6b5a", geo: "kidney",
+    region: "abdomen", tissue: "visceral",
     name: { es: "Riñón con Vasculatura", en: "Kidney with Vasculature" },
     tag: { es: "Arterias · Venas renales · Uréter", en: "Arteries · Renal veins · Ureter" },
     desc: { es: "Riñón con arterias y venas renales diferenciadas, uréter y cápsula renal. Para nefrología, urología y educación.", en: "Kidney with color-differentiated renal arteries and veins, ureter and renal capsule. For nephrology, urology and education." },
@@ -186,6 +195,7 @@ const P = [
     priceSlt: 39.99, pricePrint: null,
     hostedBtn: "UCHEK3PJFQMBW", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5a48a", geo: "pelvis",
+    region: "pelvis", tissue: "oseo",
     name: { es: "Pelvis Completa", en: "Complete Pelvis" },
     tag: { es: "Ilíacos · Sacro · Cóccix", en: "Iliac bones · Sacrum · Coccyx" },
     desc: { es: "Huesos ilíacos, sacro y cóccix con detalle cortical completo. Segmentado desde CT de trauma. Para ortopedia y planificación quirúrgica.", en: "Iliac bones, sacrum and coccyx with full cortical detail. Segmented from trauma CT. For orthopedics and surgical planning." },
@@ -797,19 +807,19 @@ export default function App() {
 body,html{background:var(--bg);color:var(--fg);font-family:'Montserrat',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
 h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:700}
 
-nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(246,247,250,0.92);backdrop-filter:blur(20px);z-index:200;border-bottom:1px solid rgba(0,0,0,0.06)}
-.logo{font-family:'Montserrat',sans-serif;font-size:28px;cursor:pointer;display:flex;gap:0;align-items:center;font-weight:800;letter-spacing:-0.5px}.logo .m{color:#0b3c73}.logo .d{color:#d64830}.logo img{height:44px;width:auto;object-fit:contain;margin-right:10px}
-.nl{display:flex;gap:6px;align-items:center;list-style:none}
-.nb{background:none;border:1px solid transparent;color:var(--fg2);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-family:'Montserrat';font-weight:500;transition:all .2s;position:relative}
+nav{position:fixed;top:0;left:0;right:0;padding:0 48px;height:68px;display:flex;align-items:center;justify-content:space-between;background:rgba(246,247,250,0.97);backdrop-filter:blur(20px);z-index:200;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateZ(0);-webkit-transform:translateZ(0)}
+.logo{font-family:'Montserrat',sans-serif;font-size:30px;cursor:pointer;display:flex;gap:0;align-items:center;font-weight:800;letter-spacing:-0.5px}.logo .m{color:#0b3c73}.logo .d{color:#d64830}.logo img{height:48px;width:auto;object-fit:contain;margin-right:10px}
+.nl{display:flex;gap:4px;align-items:center;list-style:none}
+.nb{background:none;border:1px solid transparent;color:var(--fg2);padding:10px 18px;border-radius:10px;cursor:pointer;font-size:14px;font-family:'Montserrat';font-weight:500;transition:all .2s;position:relative}
 .nb:hover,.nb.on{background:var(--acs);color:var(--ac);border-color:rgba(8,145,178,0.1)}
 .cb{position:absolute;top:2px;right:2px;width:17px;height:17px;background:var(--ac);color:#fff;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700}
 .lb{background:var(--bg3);border:none;color:var(--fg2);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'Montserrat';font-weight:600;letter-spacing:.5px;transition:all .2s}.lb:hover{background:var(--acs);color:var(--ac)}
 .hb{display:none;background:none;border:none;color:var(--fg);cursor:pointer;padding:4px}
-.mm{display:none;position:fixed;top:54px;left:0;right:0;bottom:0;background:rgba(246,247,250,0.98);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:28px}.mm.open{display:flex}
+.mm{display:none;position:fixed;top:68px;left:0;right:0;bottom:0;background:rgba(246,247,250,0.98);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:28px}.mm.open{display:flex}
 .mm button{background:none;border:none;color:var(--fg);font-family:'Montserrat',sans-serif;font-size:26px;cursor:pointer}
 
 /* HERO */
-.hero{min-height:100vh;display:flex;align-items:center;padding:90px 48px 40px;gap:0;max-width:1440px;margin:0 auto;overflow:hidden;position:relative}
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 48px 40px;gap:0;max-width:1440px;margin:0 auto;overflow:hidden;position:relative}
 .hero-left{flex:0 0 34%;padding-right:40px;position:relative;overflow:hidden;height:320px}
 .hero-right{flex:1;height:72vh;min-height:460px;border-radius:24px;overflow:hidden;cursor:pointer;position:relative}
 
@@ -855,7 +865,15 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 
 /* CATALOG */
 .cat{padding:90px 48px 40px;max-width:1200px;margin:0 auto}
-.cat-h{text-align:center;margin-bottom:44px}.cat-h h2{font-size:clamp(26px,4vw,40px);margin-bottom:8px}.cat-h p{color:var(--fg2);font-size:15px}
+.cat-h{text-align:center;margin-bottom:32px}.cat-h h2{font-size:clamp(26px,4vw,40px);margin-bottom:8px}.cat-h p{color:var(--fg2);font-size:15px}
+.cat-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:28px;padding:16px 20px;background:var(--bg2);border-radius:14px;border:1px solid rgba(0,0,0,0.05)}
+.cat-filter-group{display:flex;align-items:center;gap:6px}
+.cat-filter-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--fg3);white-space:nowrap}
+.cat-filter-select{padding:7px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.07);background:var(--bg);color:var(--fg);font-size:12px;font-weight:600;font-family:'Montserrat',sans-serif;cursor:pointer;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239496ab' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.cat-filter-select:focus{border-color:var(--ac)}
+.cat-filter-sep{width:1px;height:20px;background:rgba(0,0,0,0.07);margin:0 4px}
+.cat-active-count{margin-left:auto;font-size:12px;color:var(--fg3);font-weight:500}
+.cat-reset{background:none;border:none;color:var(--ac);font-size:12px;font-weight:600;cursor:pointer;font-family:'Montserrat';padding:6px 10px;border-radius:8px;transition:background .2s}.cat-reset:hover{background:var(--acs)}
 .cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
 .cc{background:var(--bg2);border:1px solid rgba(0,0,0,0.04);border-radius:var(--rd);overflow:hidden;cursor:pointer;transition:all .3s}.cc:hover{border-color:rgba(8,145,178,0.12);box-shadow:var(--sh);transform:translateY(-3px)}
 .ct{height:190px;background:var(--vbg);overflow:hidden;position:relative}.ct svg{opacity:.45}
@@ -865,8 +883,8 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 .cb2{padding:8px 16px;border-radius:10px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Montserrat';transition:all .2s}.cb2.pr{background:var(--ac);color:#fff}.cb2.pr:hover{background:var(--ac2)}.cb2.ad{background:var(--acs);color:var(--ac)}
 
 /* PRODUCT DETAIL */
-.pd{padding:90px 48px 40px;max-width:1200px;margin:0 auto}
-.pd-b{background:none;border:none;color:var(--fg2);font-size:14px;cursor:pointer;font-family:'Montserrat';margin-bottom:20px;padding:0;transition:color .2s}.pd-b:hover{color:var(--ac)}
+.pd{padding:100px 48px 40px;max-width:1200px;margin:0 auto}
+.pd-b{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1.5px solid rgba(0,0,0,0.08);color:var(--fg2);font-size:14px;font-weight:600;cursor:pointer;font-family:'Montserrat';margin-bottom:24px;padding:10px 20px;border-radius:10px;transition:all .2s}.pd-b:hover{color:var(--ac);border-color:var(--ac);background:var(--acs);transform:translateX(-2px)}
 .pd-l{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
 .pd-v{height:480px;border-radius:20px;overflow:hidden;background:var(--vbg)}
 .pd-i h1{font-size:30px;margin-bottom:6px}.pd-i .tl{font-size:14px;color:var(--fg3);margin-bottom:14px}
@@ -875,8 +893,8 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 .pd-i .dt{font-size:13px;font-weight:600;color:var(--fg2);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
 .pd-i .dd{font-size:14px;color:var(--fg2);line-height:1.7;margin-bottom:16px}
 .pd-a{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.pd-btn{padding:13px 26px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'Montserrat';transition:all .2s;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
-.pd-btn.cart{background:var(--bg3);color:var(--fg)}.pd-btn.cart:hover{background:var(--acs);color:var(--ac)}.pd-btn.cart.ad{background:var(--acs);color:var(--ac)}
+.pd-btn{padding:14px 28px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:'Montserrat';transition:all .2s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;width:100%;justify-content:center}
+.pd-btn.cart{background:var(--bg3);color:var(--fg);border:1.5px solid rgba(0,0,0,0.1)}.pd-btn.cart:hover{background:var(--acs);color:var(--ac);border-color:var(--ac)}.pd-btn.cart.ad{background:var(--acs);color:var(--ac);border-color:var(--ac)}
 .pd-paypal{margin-top:12px}
 .pd-h{font-size:12px;color:var(--fg3);margin-top:14px}
 
@@ -974,10 +992,10 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 .svc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0b3c73,#d64830);opacity:0;transition:.3s}
 .svc-card:hover{border-color:rgba(11,60,115,0.2);box-shadow:var(--sh);transform:translateY(-4px)}
 .svc-card:hover::before{opacity:1}
-.svc-icon{font-size:32px;margin-bottom:16px}
+.svc-icon{width:52px;height:52px;border-radius:14px;background:var(--acs);display:flex;align-items:center;justify-content:center;margin-bottom:16px;flex-shrink:0}
 .svc-card h3{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--fg)}
 .svc-card p{font-size:13px;color:var(--fg2);line-height:1.65;margin-bottom:16px}
-.svc-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;background:var(--navys);color:var(--navy,#0b3c73)}
+.svc-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;background:var(--navys);color:var(--navy,#0b3c73);margin-bottom:12px}
 .svcs-cta{text-align:center}
 .svcs-cta-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:var(--navy,#0b3c73);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .25s}
 .svcs-cta-btn:hover{background:#0d4a8e;transform:translateY(-2px);box-shadow:0 8px 28px rgba(11,60,115,.25)}
@@ -1029,8 +1047,9 @@ nav{position:fixed;top:0;left:0;right:0;padding:20px 48px;display:flex;align-ite
 }
 
 /* FLOATING WHATSAPP */
-.wa-float{position:fixed;bottom:28px;right:28px;z-index:400;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.45);cursor:pointer;transition:all .25s;text-decoration:none}
+.wa-float{position:fixed;bottom:28px;left:28px;z-index:250;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.45);cursor:pointer;transition:all .25s;text-decoration:none}
 .wa-float:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,0.55)}
+.wa-float.hidden{opacity:0;pointer-events:none;transform:scale(0.8)}
 
 @media(max-width:900px){
   .qp-services{grid-template-columns:1fr}
@@ -1071,13 +1090,16 @@ footer{border-top:1px solid rgba(0,0,0,0.05);padding:36px 48px;text-align:center
 footer p{font-size:12px;color:var(--fg3)}
 
 @media(max-width:900px){
-  nav{padding:10px 16px}.nl{display:none}.hb{display:block}
-  .hero{flex-direction:column;padding:76px 20px 32px;min-height:auto;gap:20px}
+  nav{padding:0 16px}.nl{display:none}.hb{display:block}
+  .hero{flex-direction:column;padding:86px 20px 32px;min-height:auto;gap:20px}
   .hero-left{flex:none;text-align:center;height:auto;overflow:visible;padding:0}
   .text-slide{position:relative}
   .hero-right{height:50vh;min-height:280px;width:100%}
   .hero-nav{position:relative;bottom:auto;left:auto;justify-content:center;margin-top:16px}
   .about,.cat,.pd{padding-left:20px;padding-right:20px}
+  .cat-filters{flex-direction:column;align-items:flex-start;gap:12px}
+  .cat-filter-sep{display:none}
+  .cat-active-count{margin-left:0}
   .pd-l{grid-template-columns:1fr}.pd-v{height:320px}
   .cg{grid-template-columns:1fr}
   .fp{padding-left:20px;padding-right:20px}
@@ -1133,11 +1155,11 @@ footer p{font-size:12px;color:var(--fg3)}
           {cart.length === 0 ? (
             <div className="cs-e"><p>{t.cart.empty}</p><button className="hero-cta" onClick={() => { setCartOpen(false); goPage("catalog"); }}>{t.cart.browse}</button></div>
           ) : cart.map(p => (
-            <div className="cit" key={p.id}>
+            <div className="cit" key={p.cartId}>
               <div className="cit-c" style={{ background: p.color }} />
               <div className="cit-i"><h4>{p.name[lang]}</h4><span>{p.formats}</span></div>
               <div className="cit-p">${p.price}</div>
-              <button className="cit-r" onClick={() => rmCart(p.id)}>{t.cart.remove}</button>
+              <button className="cit-r" onClick={() => rmCart(p.cartId)}>{t.cart.remove}</button>
             </div>
           ))}
         </div>
@@ -1208,15 +1230,15 @@ footer p{font-size:12px;color:var(--fg3)}
           </div>
           <div className="svcs-grid">
             {[
-              { icon:"🧬", tag: lang==="es"?"Personalizado":"Custom", title: lang==="es"?"Segmentación CT/MRI":"CT/MRI Segmentation", desc: lang==="es"?"Convertimos tus imágenes DICOM en modelos 3D de precisión clínica. Cada estructura anatómica segmentada con detalle para tu caso específico.":"We convert your DICOM images into clinical-precision 3D models. Each anatomical structure segmented in detail for your specific case." },
-              { icon:"🦴", tag: lang==="es"?"Cirugía":"Surgery", title: lang==="es"?"Planificación Quirúrgica":"Surgical Planning", desc: lang==="es"?"Modelos submilimétricos para visualizar procedimientos, diseñar guías quirúrgicas y mejorar resultados en reconstrucción ósea y cirugía ortopédica.":"Sub-millimeter models to visualize procedures, design surgical guides and improve outcomes in bone reconstruction and orthopedic surgery." },
-              { icon:"🦾", tag: lang==="es"?"Rehabilitación":"Rehab", title: lang==="es"?"Férulas Personalizadas":"Custom Orthoses", desc: lang==="es"?"Diseño y fabricación de férulas a medida desde escaneo 3D del paciente. Mayor confort, mejor ajuste y tiempo de fabricación reducido.":"Design and fabrication of custom splints from 3D patient scanning. Greater comfort, better fit and reduced manufacturing time." },
-              { icon:"🖨️", tag: lang==="es"?"Fabricación":"Manufacturing", title: lang==="es"?"Impresión 3D Médica e Ingenieril":"Medical & Engineering 3D Printing", desc: lang==="es"?"FDM, SLA y SLS para prototipos, piezas funcionales y modelos anatómicos. Materiales biocompatibles disponibles para aplicaciones clínicas.":"FDM, SLA and SLS for prototypes, functional parts and anatomical models. Biocompatible materials available for clinical applications." },
-              { icon:"📐", tag: lang==="es"?"Asesoría":"Advisory", title: lang==="es"?"Asesoría en Modelado 3D":"3D Modeling Advisory", desc: lang==="es"?"Consultoría técnica para equipos médicos e ingenieros que necesitan integrar el modelado 3D y la impresión en su flujo de trabajo clínico o industrial.":"Technical consulting for medical teams and engineers needing to integrate 3D modeling and printing into their clinical or industrial workflow." },
-              { icon:"🔬", tag: lang==="es"?"I+D":"R&D", title: lang==="es"?"Proyectos de Investigación":"Research Projects", desc: lang==="es"?"Colaboración en proyectos académicos y de I+D que requieran prototipado rápido, modelado anatómico o desarrollo de dispositivos biomédicos.":"Collaboration on academic and R&D projects requiring rapid prototyping, anatomical modeling or biomedical device development." },
+              { svg: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>, tag: lang==="es"?"Personalizado":"Custom", title: lang==="es"?"Segmentación CT/MRI":"CT/MRI Segmentation", desc: lang==="es"?"Convertimos tus imágenes DICOM en modelos 3D de precisión clínica. Cada estructura anatómica segmentada con detalle para tu caso específico.":"We convert your DICOM images into clinical-precision 3D models. Each anatomical structure segmented in detail for your specific case." },
+              { svg: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, tag: lang==="es"?"Cirugía":"Surgery", title: lang==="es"?"Planificación Quirúrgica":"Surgical Planning", desc: lang==="es"?"Modelos submilimétricos para visualizar procedimientos, diseñar guías quirúrgicas y mejorar resultados en reconstrucción ósea y cirugía ortopédica.":"Sub-millimeter models to visualize procedures, design surgical guides and improve outcomes in bone reconstruction and orthopedic surgery." },
+              { svg: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M12 2a4 4 0 014 4 4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 014-4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7"/><path d="M17 14l2 2 4-4"/></svg>, tag: lang==="es"?"Rehabilitación":"Rehab", title: lang==="es"?"Férulas Personalizadas":"Custom Orthoses", desc: lang==="es"?"Diseño y fabricación de férulas a medida desde escaneo 3D del paciente. Mayor confort, mejor ajuste y tiempo de fabricación reducido.":"Design and fabrication of custom splints from 3D patient scanning. Greater comfort, better fit and reduced manufacturing time." },
+              { svg: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>, tag: lang==="es"?"Fabricación":"Manufacturing", title: lang==="es"?"Impresión 3D Médica e Ingenieril":"Medical & Engineering 3D Printing", desc: lang==="es"?"FDM, SLA y SLS para prototipos, piezas funcionales y modelos anatómicos. Materiales biocompatibles disponibles para aplicaciones clínicas.":"FDM, SLA and SLS for prototypes, functional parts and anatomical models. Biocompatible materials available for clinical applications." },
+              { svg: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>, tag: lang==="es"?"Asesoría":"Advisory", title: lang==="es"?"Asesoría en Modelado 3D":"3D Modeling Advisory", desc: lang==="es"?"Consultoría técnica para equipos médicos e ingenieros que necesitan integrar el modelado 3D y la impresión en su flujo de trabajo clínico o industrial.":"Technical consulting for medical teams and engineers needing to integrate 3D modeling and printing into their clinical or industrial workflow." },
+              { svg: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg>, tag: lang==="es"?"I+D":"R&D", title: lang==="es"?"Proyectos de Investigación":"Research Projects", desc: lang==="es"?"Colaboración en proyectos académicos y de I+D que requieran prototipado rápido, modelado anatómico o desarrollo de dispositivos biomédicos.":"Collaboration on academic and R&D projects requiring rapid prototyping, anatomical modeling or biomedical device development." },
             ].map((s,i) => (
               <div className="svc-card" key={i}>
-                <div className="svc-icon">{s.icon}</div>
+                <div className="svc-icon">{s.svg}</div>
                 <div className="svc-tag">{s.tag}</div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
@@ -1232,24 +1254,7 @@ footer p{font-size:12px;color:var(--fg3)}
       </>}
 
       {/* CATALOG */}
-      {page === "catalog" && <div className="cat">
-        <div className="cat-h"><h2>{t.catalog.title}</h2><p>{t.catalog.subtitle}</p></div>
-        <div className="cg">{P.map(p => {
-          const ic = cart.find(c => c.id === p.id && c.cartType === "stl");
-          return (<div className="cc" key={p.id}>
-            <div className="ct" onClick={() => goProd(p)}><Viewer color={p.color} active={true} modelId={p.modelId} bgColor={0xe8ebf0} /></div>
-            <div className="ci"><h3 onClick={() => goProd(p)} style={{cursor:"pointer"}}>{p.name[lang]}</h3><p className="tl">{p.tag[lang]}</p>
-              <div className="cf">
-                <div>
-                  <span className="cp">${p.priceSlt}</span>
-                  <span style={{fontSize:11,color:"var(--fg3)",marginLeft:4}}>STL</span>
-                </div>
-                <button className={`cb2 ${ic ? "ad" : "pr"}`} onClick={() => addCart(p, "stl")}>{ic ? t.catalog.added : t.catalog.addCart}</button>
-              </div>
-            </div>
-          </div>);
-        })}</div>
-      </div>}
+      {page === "catalog" && <CatalogPage t={t} lang={lang} cart={cart} addCart={addCart} goProd={goProd} />}
 
       {/* PRODUCT */}
       {page === "product" && selProd && <ProductDetail
@@ -1269,7 +1274,7 @@ footer p{font-size:12px;color:var(--fg3)}
       </div>
 
       {/* Floating WhatsApp */}
-      <a className="wa-float" href="https://wa.me/50662924815" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+      <a className={`wa-float ${cartOpen ? "hidden" : ""}`} href="https://wa.me/50662924815" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.057 23.428a.75.75 0 00.921.921l5.568-1.475A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.964-1.362l-.355-.212-3.683.975.99-3.595-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
       </a>
 
@@ -1282,6 +1287,103 @@ footer p{font-size:12px;color:var(--fg3)}
   );
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CatalogPage — with region, price and tissue filters
+   ═══════════════════════════════════════════════════════════════════════════ */
+function CatalogPage({ t, lang, cart, addCart, goProd }) {
+  const tc = t.catalog;
+  const es = lang === "es";
+  const [filterRegion, setFilterRegion] = useState("");
+  const [filterTissue, setFilterTissue] = useState("");
+  const [filterPrice, setFilterPrice] = useState("");
+
+  const regions = {
+    cabeza:      { es: "Cabeza",      en: "Head" },
+    torax:       { es: "Tórax",       en: "Thorax" },
+    abdomen:     { es: "Abdomen",     en: "Abdomen" },
+    pelvis:      { es: "Pelvis",      en: "Pelvis" },
+    columna:     { es: "Columna",     en: "Spine" },
+    extremidades:{ es: "Extremidades",en: "Extremities" },
+  };
+  const tissues = {
+    oseo:          { es: "Óseo",          en: "Bone" },
+    cardiovascular:{ es: "Cardiovascular",en: "Cardiovascular" },
+    nervioso:      { es: "Nervioso",      en: "Neural" },
+    respiratorio:  { es: "Respiratorio",  en: "Respiratory" },
+    visceral:      { es: "Visceral",      en: "Visceral" },
+  };
+
+  const filtered = P.filter(p => {
+    if (filterRegion && p.region !== filterRegion) return false;
+    if (filterTissue && p.tissue !== filterTissue) return false;
+    if (filterPrice === "under40" && p.priceSlt >= 40) return false;
+    if (filterPrice === "40to50" && (p.priceSlt < 40 || p.priceSlt > 50)) return false;
+    if (filterPrice === "over50" && p.priceSlt <= 50) return false;
+    return true;
+  });
+
+  const isFiltered = filterRegion || filterTissue || filterPrice;
+
+  return (
+    <div className="cat">
+      <div className="cat-h"><h2>{tc.title}</h2><p>{tc.subtitle}</p></div>
+
+      {/* Filter bar */}
+      <div className="cat-filters">
+        <div className="cat-filter-group">
+          <span className="cat-filter-label">{es ? "Región" : "Region"}</span>
+          <select className="cat-filter-select" value={filterRegion} onChange={e => setFilterRegion(e.target.value)}>
+            <option value="">{es ? "Todas" : "All"}</option>
+            {Object.entries(regions).map(([k,v]) => <option key={k} value={k}>{v[lang]}</option>)}
+          </select>
+        </div>
+        <div className="cat-filter-sep" />
+        <div className="cat-filter-group">
+          <span className="cat-filter-label">{es ? "Tejido" : "Tissue"}</span>
+          <select className="cat-filter-select" value={filterTissue} onChange={e => setFilterTissue(e.target.value)}>
+            <option value="">{es ? "Todos" : "All"}</option>
+            {Object.entries(tissues).map(([k,v]) => <option key={k} value={k}>{v[lang]}</option>)}
+          </select>
+        </div>
+        <div className="cat-filter-sep" />
+        <div className="cat-filter-group">
+          <span className="cat-filter-label">{es ? "Precio" : "Price"}</span>
+          <select className="cat-filter-select" value={filterPrice} onChange={e => setFilterPrice(e.target.value)}>
+            <option value="">{es ? "Cualquier precio" : "Any price"}</option>
+            <option value="under40">{es ? "Menos de $40" : "Under $40"}</option>
+            <option value="40to50">$40 – $50</option>
+            <option value="over50">{es ? "Más de $50" : "Over $50"}</option>
+          </select>
+        </div>
+        <span className="cat-active-count">{filtered.length} {es ? "modelo" : "model"}{filtered.length !== 1 ? "s" : ""}</span>
+        {isFiltered && <button className="cat-reset" onClick={() => { setFilterRegion(""); setFilterTissue(""); setFilterPrice(""); }}>{es ? "Limpiar filtros" : "Clear filters"}</button>}
+      </div>
+
+      <div className="cg">{filtered.length === 0
+        ? <div style={{gridColumn:"1/-1",textAlign:"center",padding:"60px 0",color:"var(--fg3)"}}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{marginBottom:12,opacity:.4}}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <p style={{fontSize:15}}>{es ? "Ningún modelo coincide con los filtros" : "No models match the selected filters"}</p>
+          </div>
+        : filtered.map(p => {
+          const ic = cart.find(c => c.id === p.id && c.cartType === "stl");
+          return (<div className="cc" key={p.id}>
+            <div className="ct" onClick={() => goProd(p)}><Viewer color={p.color} active={true} modelId={p.modelId} bgColor={0xe8ebf0} /></div>
+            <div className="ci"><h3 onClick={() => goProd(p)} style={{cursor:"pointer"}}>{p.name[lang]}</h3><p className="tl">{p.tag[lang]}</p>
+              <div className="cf">
+                <div>
+                  <span className="cp">${p.priceSlt}</span>
+                  <span style={{fontSize:11,color:"var(--fg3)",marginLeft:4}}>STL</span>
+                </div>
+                <button className={`cb2 ${ic ? "ad" : "pr"}`} onClick={() => addCart(p, "stl")}>{ic ? tc.added : tc.addCart}</button>
+              </div>
+            </div>
+          </div>);
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ProductDetail — página de producto con toggle STL / Maqueta
@@ -1527,28 +1629,28 @@ function QuoteForm({ t, lang }) {
   const es = lang === "es";
 
   const services = [
-    { icon: "🧬", bg: "#e8f0fb", title: es ? "Segmentación desde CT/MRI" : "CT/MRI Segmentation",
+    { svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0b3c73" strokeWidth="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>, bg: "#e8f0fb", title: es ? "Segmentación desde CT/MRI" : "CT/MRI Segmentation",
       desc: es ? "Tomografías y resonancias propias convertidas en modelos 3D de alta fidelidad. Envianos tus archivos DICOM y generamos el modelo de tu caso específico." : "Your own CT or MRI scans converted into high-fidelity 3D models. Send us your DICOM files and we generate the model for your specific case." },
-    { icon: "🎓", bg: "#fef3e8", title: es ? "Modelos Educativos" : "Educational Models",
+    { svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45a1a" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>, bg: "#fef3e8", title: es ? "Modelos Educativos" : "Educational Models",
       desc: es ? "Anatomía humana estándar lista para usar en aula, laboratorio o presentaciones clínicas. Disponible en STL y OBJ compatibles con cualquier software." : "Standard human anatomy ready for classroom, laboratory or clinical presentations. Available in STL and OBJ compatible with any software." },
-    { icon: "🦾", bg: "#edf8f1", title: es ? "Planificación Quirúrgica" : "Surgical Planning",
+    { svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, bg: "#edf8f1", title: es ? "Planificación Quirúrgica" : "Surgical Planning",
       desc: es ? "Modelos de precisión submilimétrica para visualizar procedimientos, diseñar guías quirúrgicas y mejorar resultados en cirugía ortopédica, maxilofacial y más." : "Sub-millimeter precision models for visualizing procedures, designing surgical guides and improving outcomes in orthopedic, maxillofacial surgery and more." },
-    { icon: "🖨️", bg: "#fce8e8", title: es ? "Impresión 3D Física" : "Physical 3D Printing",
+    { svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#991b1b" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>, bg: "#fce8e8", title: es ? "Impresión 3D Física" : "Physical 3D Printing",
       desc: es ? "Entregamos maquetas físicas impresas en resina o PLA de alta resolución. Ideal para simulación, enseñanza táctil y comunicación con pacientes." : "We deliver physical models printed in high-resolution resin or PLA. Ideal for simulation, tactile teaching and patient communication." },
   ];
 
   const steps = [
     { num: 1, title: es ? "Envías tus imágenes" : "Send your images",
-      desc: es ? "Subís tus archivos DICOM (CT o MRI) o indicás el modelo anatómico que necesitás" : "Upload your DICOM files (CT or MRI) or specify the anatomical model you need",
+      desc: es ? "Subís tus archivos DICOM (CT o MRI) o indicás el modelo anatómico que necesitás. También podés describirnos el caso." : "Upload your DICOM files (CT or MRI) or specify the anatomical model you need. You can also describe the case to us.",
       img: null, placeholder: es ? "Imagen: archivo DICOM en visor" : "Image: DICOM file in viewer" },
     { num: 2, title: es ? "Segmentación en 3D Slicer" : "Segmentation in 3D Slicer",
-      desc: es ? "Procesamos las imágenes con 3D Slicer delimitando cada estructura anatómica con precisión clínica" : "We process the images with 3D Slicer delineating each anatomical structure with clinical precision",
+      desc: es ? "Procesamos las imágenes con 3D Slicer delimitando cada estructura anatómica con precisión clínica y detalle submilimétrico." : "We process the images with 3D Slicer, delineating each anatomical structure with clinical precision and sub-millimeter detail.",
       img: null, placeholder: es ? "Imagen: segmentación en 3D Slicer" : "Image: segmentation in 3D Slicer" },
     { num: 3, title: es ? "Revisión y refinamiento" : "Review and refinement",
-      desc: es ? "Limpiamos la malla 3D, optimizamos para impresión y aplicamos acabado de superficie profesional" : "We clean the 3D mesh, optimize for printing and apply professional surface finishing",
+      desc: es ? "Limpiamos la malla 3D, optimizamos para impresión y aplicamos acabado de superficie profesional con verificación dimensional." : "We clean the 3D mesh, optimize for printing and apply professional surface finishing with dimensional verification.",
       img: null, placeholder: es ? "Imagen: modelo refinado en vista 3D" : "Image: refined model in 3D view" },
     { num: 4, title: es ? "Entrega de archivos" : "File delivery",
-      desc: es ? "Recibes los archivos en STL y OBJ listos para visualizar, imprimir o integrar en tu flujo de trabajo" : "You receive the files in STL and OBJ ready to visualize, print or integrate into your workflow",
+      desc: es ? "Recibes los archivos en STL y OBJ listos para visualizar, imprimir o integrar en tu flujo de trabajo clínico." : "You receive the files in STL and OBJ ready to visualize, print or integrate into your clinical workflow.",
       img: null, placeholder: es ? "Imagen: archivos finales exportados" : "Image: final exported files" },
   ];
 
@@ -1564,7 +1666,7 @@ function QuoteForm({ t, lang }) {
       <div className="qp-services">
         {services.map((s,i) => (
           <div className="qp-svc" key={i}>
-            <div className="qp-svc-icon" style={{background:s.bg}}>{s.icon}</div>
+            <div className="qp-svc-icon" style={{background:s.bg}}>{s.svg}</div>
             <div><h3>{s.title}</h3><p>{s.desc}</p></div>
           </div>
         ))}
