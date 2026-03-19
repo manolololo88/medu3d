@@ -700,7 +700,11 @@ function Viewer({ color, active, hd = false, modelId = "model", interact = false
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function App() {
   const [lang, setLang] = useState("es");
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(() => {
+    // Lee la página inicial desde el hash de la URL si existe
+    const h = window.location.hash.replace("#", "");
+    return ["home","catalog","quote","about","contact","product"].includes(h) ? h : "home";
+  });
   const [selProd, setSelProd] = useState(null);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -711,11 +715,45 @@ export default function App() {
   const [dir, setDir] = useState(1); // 1=forward -1=backward
   const [paymentDone, setPaymentDone] = useState(false);
   const busy = useRef(false);
+  const skipHistory = useRef(false); // evita doble push cuando popstate dispara
 
   const t = T[lang];
 
   const hiRef = useRef(0);
   const phaseRef = useRef("idle");
+
+  // ── Sincroniza URL con la página actual ──────────────────────────────────
+  const pushHistory = (p, prodId = null) => {
+    if (skipHistory.current) return;
+    const hash = p === "home" ? "" : `#${p}`;
+    const state = { page: p, prodId };
+    window.history.pushState(state, "", hash || window.location.pathname);
+  };
+
+  // ── Escucha el botón atrás/adelante del navegador ────────────────────────
+  useEffect(() => {
+    const onPop = (e) => {
+      const state = e.state;
+      const target = state?.page ?? "home";
+      skipHistory.current = true;
+      setPageVisible(false);
+      setTimeout(() => {
+        if (target === "product" && state?.prodId) {
+          const prod = P.find(p => p.id === state.prodId);
+          if (prod) setSelProd(prod);
+        }
+        setPage(target);
+        setPendingPage(null);
+        window.scrollTo(0, 0);
+        setTimeout(() => { setPageVisible(true); skipHistory.current = false; }, 30);
+      }, 320);
+    };
+    window.addEventListener("popstate", onPop);
+    // Registra el estado inicial para que el primer "atrás" funcione
+    const initHash = window.location.hash.replace("#", "") || "home";
+    window.history.replaceState({ page: initHash, prodId: null }, "", window.location.href);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const goTo = useCallback((idx, d) => {
     if (busy.current || idx === hiRef.current) return;
@@ -757,15 +795,18 @@ export default function App() {
   };
   const rmCart = cartId => setCart(cart.filter(c => c.cartId !== cartId));
   const total = cart.reduce((s, p) => s + p.price, 0).toFixed(2);
+
   const goProd = p => {
     setPageVisible(false);
     setTimeout(() => {
       setSelProd(p);
       setPage("product");
+      pushHistory("product", p.id);
       window.scrollTo(0, 0);
       setTimeout(() => setPageVisible(true), 30);
     }, 320);
   };
+
   const [pageVisible, setPageVisible] = useState(true);
   const [pendingPage, setPendingPage] = useState(null);
 
@@ -774,6 +815,7 @@ export default function App() {
     setPageVisible(false);
     setPendingPage(p);
     setMenuOpen(false);
+    pushHistory(p);
   };
 
   useEffect(() => {
@@ -1498,20 +1540,6 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
 function AboutPage({ lang }) {
   const es = lang === "es";
 
-  const experience = [
-    { title: es?"Pasante Biomédico":"Biomedical Intern", org:"CENADET — Centro Nacional para la Detección Temprana", year:"2025", desc: es?"Mantenimiento preventivo y correctivo de más de 15 equipos de diagnóstico (rayos X, ecógrafos, mamógrafos). Documentación de métricas de rendimiento y optimización de flujos de trabajo.":"Preventive and corrective maintenance of 15+ diagnostic devices (X-ray, ultrasound, mammography). Performance metrics documentation and workflow optimization." },
-    { title: es?"Pasante en Rehabilitación":"Rehabilitation Intern", org:"Bendizione Centro de Neurociencia", year:"2025", desc: es?"Evaluaciones biomecánicas en más de 20 pacientes con Kinovea. Análisis cuantitativo para ajustes de protocolo terapéutico. Pruebas de prototipo del modelo de simulación REBOA.":"Biomechanical assessments on 20+ patients using Kinovea. Quantitative data analysis for therapeutic protocol adjustments. REBOA simulation model prototype testing." },
-    { title: es?"Pasante I+D":"R&D Intern", org:"Innovatio Laboratory — INA", year:"2025", desc: es?"Fabricación de prototipos funcionales con FDM, SLA y escaneo 3D. Traducción de especificaciones de diseño a componentes físicos con verificación dimensional.":"Functional prototype fabrication using FDM, SLA and 3D scanning. Translation of design specifications into physical components with dimensional verification." },
-    { title: es?"Desarrollador Principal — IA/Robótica":"Lead Developer — AI/Robotics", org:"Proyecto Giiro", year:"2023–2025", desc: es?"Asistente robótico con seguimiento facial en tiempo real (OpenCV + CNN) e inferencia CUDA en Jetson Orin Nano. Diseño mecánico en Fusion 360, servocontrol y síntesis de voz.":"Robotic assistant with real-time facial tracking (OpenCV + CNN) and CUDA inference on Jetson Orin Nano. Mechanical design in Fusion 360, servo control and speech synthesis." },
-  ];
-
-  const skillGroups = [
-    { label: es?"Modelado & Fabricación 3D":"3D Modeling & Fabrication", tags:["3D Slicer","Fusion 360","FDM / SLA / SLS","Escaneo 3D","Prototipado rápido"] },
-    { label: es?"IA & Sistemas Integrados":"AI & Embedded Systems", tags:["Python","PyTorch","OpenCV","CUDA","NVIDIA Jetson","Raspberry Pi"] },
-    { label: es?"Calidad & Normativa":"Quality & Regulatory", tags:["ISO 13485","FDA 21 CFR 820","FMEA","DHF","Verificación/Validación"] },
-    { label: es?"Análisis & Herramientas":"Analysis & Tools", tags:["MATLAB","Minitab","Power BI","Kinovea","Adobe Suite"] },
-  ];
-
   return (
     <div className="ap">
       {/* Hero */}
@@ -1529,78 +1557,6 @@ function AboutPage({ lang }) {
           <div className="ap-photo-placeholder">
             <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             <span>{es ? "Tu foto aquí" : "Your photo here"}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="ap-body">
-        {/* Experience */}
-        <div className="ap-section">
-          <h3>{es ? "Experiencia" : "Experience"}</h3>
-          <div className="ap-exp">
-            {experience.map((e,i) => (
-              <div className="ap-exp-item" key={i}>
-                <div className="ap-exp-dot" />
-                <div>
-                  <h4>{e.title}</h4>
-                  <div className="ap-org">{e.org}</div>
-                  <div className="ap-yr">{e.year}</div>
-                  <p>{e.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Skills + Education + Certs */}
-        <div className="ap-section">
-          <h3>{es ? "Formación" : "Education"}</h3>
-          <div className="ap-exp" style={{marginBottom:32}}>
-            <div className="ap-exp-item">
-              <div className="ap-exp-dot" />
-              <div>
-                <h4>{es ? "Licenciatura en Ingeniería Biomédica" : "BSc in Biomedical Engineering"}</h4>
-                <div className="ap-org">ULACIT — Universidad Latinoamericana de Ciencia y Tecnología</div>
-                <div className="ap-yr">2021 – 2025</div>
-              </div>
-            </div>
-            <div className="ap-exp-item">
-              <div className="ap-exp-dot" />
-              <div>
-                <h4>{es ? "Especialidad en Diseño Gráfico" : "Graphic Design Specialization"}</h4>
-                <div className="ap-org">ABC Bilingual School</div>
-                <div className="ap-yr">2019 – 2021</div>
-              </div>
-            </div>
-          </div>
-
-          <h3>{es ? "Habilidades" : "Skills"}</h3>
-          <div className="ap-skills">
-            {skillGroups.map((g,i) => (
-              <div className="ap-skill-group" key={i}>
-                <h4>{g.label}</h4>
-                <div className="ap-skill-tags">
-                  {g.tags.map((tag,j) => <span className="ap-skill-tag" key={j}>{tag}</span>)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{marginTop:28}}>
-            <h3>{es ? "Certificaciones" : "Certifications"}</h3>
-            <div className="ap-certs">
-              {[
-                "TOEFL ITP C1 — 617",
-                es?"Lean Six Sigma Yellow Belt (en progreso)":"Lean Six Sigma Yellow Belt (in progress)",
-                es?"ISO 13485:2016 Foundations (en progreso)":"ISO 13485:2016 Foundations (in progress)",
-              ].map((cert,i) => (
-                <div className="ap-cert" key={i}>
-                  <div className="ap-cert-dot" />
-                  <span>{cert}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
