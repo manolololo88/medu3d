@@ -115,6 +115,7 @@ const P = [
     hostedBtn: "MDVGEXSZCHEQY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e05555", geo: "heart",
     region: "torax", tissue: "cardiovascular",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Corazón Humano", en: "Human Heart" },
     tag: { es: "4 cámaras · Válvulas · Grandes vasos", en: "4 chambers · Valves · Great vessels" },
     desc: { es: "Modelo detallado del corazón humano completo con las 4 cámaras cardíacas, válvulas y grandes vasos. Segmentado desde CT con contraste. Ideal para educación cardiovascular y planificación quirúrgica.", en: "Detailed model of the complete human heart with all 4 cardiac chambers, valves and great vessels. Segmented from contrast CT. Ideal for cardiovascular education and surgical planning." },
@@ -124,6 +125,7 @@ const P = [
     hostedBtn: "49659K538LTZ6", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c98a90", geo: "brain",
     region: "cabeza", tissue: "nervioso",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Cerebro", en: "Brain" },
     tag: { es: "Hemisferios · Surcos · Cerebelo", en: "Hemispheres · Sulci · Cerebellum" },
     desc: { es: "Modelo cerebral con surcos y circunvoluciones detalladas, hemisferios separados, cerebelo y tronco encefálico. Segmentado desde MRI T1. Para neurociencia y educación.", en: "Brain model with detailed sulci and gyri, separated hemispheres, cerebellum and brainstem. Segmented from T1 MRI. For neuroscience and education." },
@@ -133,6 +135,7 @@ const P = [
     hostedBtn: "8BZZW5EGQNZAJ", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e8a0b0", geo: "lungs",
     region: "torax", tissue: "respiratorio",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Pulmones", en: "Lungs" },
     tag: { es: "Pulmón izq. y der. · Árbol bronquial", en: "Left & right lung · Bronchial tree" },
     desc: { es: "Modelo de pulmones con diferenciación de pulmón izquierdo y derecho, árbol bronquial y estructuras vasculares. Segmentado desde CT de tórax. Para neumología y educación médica.", en: "Lung model with differentiated left and right lungs, bronchial tree and vascular structures. Segmented from chest CT. For pulmonology and medical education." },
@@ -142,15 +145,17 @@ const P = [
     hostedBtn: "FJJB3XH8FURZY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5703a", geo: "liver",
     region: "abdomen", tissue: "visceral",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Hígado", en: "Liver" },
-    tag: { es: "Lóbulos · Vesícula · Vasculatura", en: "Lobes · Gallbladder · Vasculature" },
-    desc: { es: "Modelo hepático con segmentación de lóbulos, vesícula biliar y vasculatura portal y hepática. Segmentado desde CT con contraste. Para hepatología y cirugía.", en: "Hepatic model with lobe segmentation, gallbladder and portal and hepatic vasculature. Segmented from contrast CT. For hepatology and surgery." },
+    tag: { es: "Lóbulos · Vasculatura portal y hepática", en: "Lobes · Portal & hepatic vasculature" },
+    desc: { es: "Modelo hepático con segmentación de lóbulos y vasculatura portal y hepática. Segmentado desde CT con contraste. Para hepatología y cirugía.", en: "Hepatic model with lobe segmentation and portal and hepatic vasculature. Segmented from contrast CT. For hepatology and surgery." },
   },
   { id: "skull", modelId: "craneo",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "C757MAF6AM8YA", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c4a882", geo: "skull",
     region: "cabeza", tissue: "oseo",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Cráneo Adulto", en: "Adult Skull" },
     tag: { es: "Mandíbula articulada · Alta resolución", en: "Articulated mandible · High resolution" },
     desc: { es: "Cráneo completo con mandíbula separable. Incluye suturas craneales, forámenes y procesos óseos. Segmentado desde CT de alta resolución (0.5mm). Para educación anatómica y odontología.", en: "Complete skull with separable mandible. Includes cranial sutures, foramina and bony processes. Segmented from high-resolution CT (0.5mm). For anatomical education and dentistry." },
@@ -160,6 +165,7 @@ const P = [
     hostedBtn: "6U65AC2JJEXFL", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#d4b896", geo: "hand",
     region: "extremidades", tissue: "oseo",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Huesos de la Mano", en: "Hand Bones" },
     tag: { es: "27 huesos · Carpo · Metacarpo · Falanges", en: "27 bones · Carpals · Metacarpals · Phalanges" },
     desc: { es: "Conjunto completo de los 27 huesos de la mano: huesos del carpo, metacarpianos y falanges. Segmentado desde CT de alta resolución. Ideal para cirugía ortopédica y traumatología.", en: "Complete set of 27 hand bones: carpal bones, metacarpals and phalanges. Segmented from high-resolution CT. Ideal for orthopedic surgery and traumatology." },
@@ -169,6 +175,7 @@ const P = [
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
     region: "extremidades", tissue: "oseo",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Huesos del Pie", en: "Foot Bones" },
     tag: { es: "26 huesos · Tarso · Metatarso · Falanges", en: "26 bones · Tarsals · Metatarsals · Phalanges" },
     desc: { es: "Conjunto completo de los 26 huesos del pie: tarso, metatarsianos y falanges. Segmentado desde CT. Para podología, ortopedia y biomecánica.", en: "Complete set of 26 foot bones: tarsals, metatarsals and phalanges. Segmented from CT. For podiatry, orthopedics and biomechanics." },
@@ -178,27 +185,30 @@ const P = [
     hostedBtn: "637LDGMDRNE5N", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#7a8fa3", geo: "spine",
     region: "columna", tissue: "oseo",
-    name: { es: "Columna Lumbar", en: "Lumbar Spine" },
-    tag: { es: "L1-L5 · Discos intervertebrales", en: "L1-L5 · Intervertebral discs" },
-    desc: { es: "Vértebras L1-L5 con discos intervertebrales diferenciados. Detalle de procesos espinosos, transversos y articulares. Para estudio ortopédico y quirúrgico.", en: "L1-L5 vertebrae with differentiated intervertebral discs. Detail of spinous, transverse and articular processes. For orthopedic and surgical study." },
+    rotation: [0, 0, 0],
+    name: { es: "Columna Torácica y Lumbar", en: "Thoracic & Lumbar Spine" },
+    tag: { es: "T1-L5 · Sacro · Discos intervertebrales", en: "T1-L5 · Sacrum · Intervertebral discs" },
+    desc: { es: "Columna vertebral completa desde T1 hasta L5 con sacro y discos intervertebrales diferenciados. Detalle de procesos espinosos, transversos y articulares. Para estudio ortopédico y quirúrgico.", en: "Complete spine from T1 to L5 with sacrum and differentiated intervertebral discs. Detail of spinous, transverse and articular processes. For orthopedic and surgical study." },
   },
   { id: "kidney", modelId: "rinones",
     priceSlt: 39.99, pricePrint: null,
     hostedBtn: "22N8FEKMP8FAY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#9e6b5a", geo: "kidney",
     region: "abdomen", tissue: "visceral",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Riñón con Vasculatura", en: "Kidney with Vasculature" },
-    tag: { es: "Arterias · Venas renales · Uréter", en: "Arteries · Renal veins · Ureter" },
-    desc: { es: "Riñón con arterias y venas renales diferenciadas, uréter y cápsula renal. Para nefrología, urología y educación.", en: "Kidney with color-differentiated renal arteries and veins, ureter and renal capsule. For nephrology, urology and education." },
+    tag: { es: "Arterias · Venas renales", en: "Arteries · Renal veins" },
+    desc: { es: "Riñón con arterias y venas renales diferenciadas y cápsula renal. Para nefrología, urología y educación.", en: "Kidney with color-differentiated renal arteries and veins and renal capsule. For nephrology, urology and education." },
   },
   { id: "pelvis", modelId: "pelvis",
     priceSlt: 39.99, pricePrint: null,
     hostedBtn: "UCHEK3PJFQMBW", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5a48a", geo: "pelvis",
     region: "pelvis", tissue: "oseo",
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Pelvis Completa", en: "Complete Pelvis" },
     tag: { es: "Ilíacos · Sacro · Cóccix", en: "Iliac bones · Sacrum · Coccyx" },
-    desc: { es: "Huesos ilíacos, sacro y cóccix con detalle cortical completo. Segmentado desde CT de trauma. Para ortopedia y planificación quirúrgica.", en: "Iliac bones, sacrum and coccyx with full cortical detail. Segmented from trauma CT. For orthopedics and surgical planning." },
+    desc: { es: "Huesos ilíacos, sacro y cóccix con detalle cortical completo. Para ortopedia y planificación quirúrgica.", en: "Iliac bones, sacrum and coccyx with full cortical detail. For orthopedics and surgical planning." },
   },
 ];
 
@@ -480,7 +490,7 @@ const cardFieldStyle = {
 /* ═══════════════════════════════════════════════════════════════════════════
    LazyViewer — solo carga el modelo 3D cuando la tarjeta es visible
    ═══════════════════════════════════════════════════════════════════════════ */
-function LazyViewer({ color, modelId, bgColor }) {
+function LazyViewer({ color, modelId, bgColor, rotation = [0,0,0] }) {
   const wrapRef = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -498,7 +508,7 @@ function LazyViewer({ color, modelId, bgColor }) {
   return (
     <div ref={wrapRef} style={{ width: "100%", height: "100%" }}>
       {visible
-        ? <Viewer color={color} active={true} modelId={modelId} bgColor={bgColor} />
+        ? <Viewer color={color} active={true} modelId={modelId} bgColor={bgColor} rotation={rotation} />
         : <div style={{ width:"100%", height:"100%", background:`#${bgColor.toString(16).padStart(6,"0")}`,
             display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#b0b4c8" strokeWidth="1.5">
@@ -656,7 +666,7 @@ function parseGLB(buf) {
   return { pos, nor };
 }
 
-function Viewer({ color, active, hd = false, modelId = "model", interact = false, bgColor = 0xeef1f5 }) {
+function Viewer({ color, active, hd = false, modelId = "model", interact = false, bgColor = 0xeef1f5, rotation = [0,0,0] }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!active || !ref.current) return;
@@ -696,6 +706,7 @@ function Viewer({ color, active, hd = false, modelId = "model", interact = false
       const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.35, metalness: 0.08 });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.scale.setScalar(sc);
+      mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
       if (!alive) return;
       scene.add(mesh);
     }).catch(e => console.error("Fetch error:", e));
@@ -723,7 +734,7 @@ function Viewer({ color, active, hd = false, modelId = "model", interact = false
     const onR = ()=>{ if(!alive)return; const nw=c.clientWidth,nh=c.clientHeight; cam.aspect=nw/nh; cam.updateProjectionMatrix(); r.setSize(nw,nh); };
     window.addEventListener("resize", onR);
     return ()=>{ alive=false; cancelAnimationFrame(aid); window.removeEventListener("resize",onR); r.dispose(); try{if(c.contains(r.domElement))c.removeChild(r.domElement);}catch(e){} };
-  }, [active, color, hd, modelId, interact, bgColor]);
+  }, [active, color, hd, modelId, interact, bgColor, rotation]);
 
   return <div ref={ref} style={{width:"100%",height:"100%"}} />;
 }
@@ -1268,7 +1279,7 @@ footer p{font-size:12px;color:var(--fg3)}
           </div>
           <div className="hero-right" onClick={() => goProd(cur)}>
             <div className={`model-wrap ${modelState}`} key={hi}>
-              <Viewer color={cur.color} active={true} modelId={cur.modelId} bgColor={0xeef1f5} />
+              <Viewer color={cur.color} active={true} modelId={cur.modelId} bgColor={0xeef1f5} rotation={cur.rotation||[0,0,0]} />
             </div>
           </div>
         </div>
@@ -1442,7 +1453,7 @@ function CatalogPage({ t, lang, cart, addCart, goProd }) {
         : filtered.map(p => {
           const ic = cart.find(c => c.id === p.id && c.cartType === "stl");
           return (<div className="cc" key={p.id}>
-            <div className="ct" onClick={() => goProd(p)}><LazyViewer color={p.color} modelId={p.modelId} bgColor={0xe8ebf0} /></div>
+            <div className="ct" onClick={() => goProd(p)}><LazyViewer color={p.color} modelId={p.modelId} bgColor={0xe8ebf0} rotation={p.rotation||[0,0,0]} /></div>
             <div className="ci"><h3 onClick={() => goProd(p)} style={{cursor:"pointer"}}>{p.name[lang]}</h3><p className="tl">{p.tag[lang]}</p>
               <div className="cf">
                 <div>
@@ -1475,7 +1486,7 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
       <button className="pd-b" onClick={() => goPage("catalog")}>{tc.back}</button>
       <div className="pd-l">
         <div className="pd-v">
-          <Viewer color={prod.color} active={true} hd={true} modelId={prod.modelId} interact={true} bgColor={0xeef1f5} />
+          <Viewer color={prod.color} active={true} hd={true} modelId={prod.modelId} interact={true} bgColor={0xeef1f5} rotation={prod.rotation||[0,0,0]} />
         </div>
         <div className="pd-i">
           <h1>{prod.name[lang]}</h1>
