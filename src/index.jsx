@@ -6,7 +6,7 @@ import * as THREE from "three";
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // PayPal Live Client ID
-const PAYPAL_CLIENT_ID = "ARguyNA3-2Hr-J5fgk9nuSxNnAe6Bd4YD7yxccFcHpmN05eMOQiQ7xddFDGokoMb9DhrVgmCTFUtBdMa";
+const PAYPAL_CLIENT_ID = "AfSYYHgXDkLFc5SVqwgX96FLwl7W3MUfGN6CsBDaDeVEI4eh5jh15fNuw3ZZX55_fpv775T9dgglL6mI";
 
 // Formspree endpoint — crea cuenta en formspree.io y reemplaza con tu ID
 // Ejemplo: "https://formspree.io/f/xpzgkwer"
@@ -223,270 +223,102 @@ function makeCartItem(p, type) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PayPal Checkout Component
-   ─────────────────────────────────────────────────────────────────────────
-   Estrategia robusta de 2 capas:
-   1) Intenta cargar el SDK con enable-funding=card y card-fields
-      → muestra botón PayPal + formulario de tarjeta inline sin cuenta
-   2) Si el SDK falla (localhost, dominio no aprobado, bloqueado por ad-blocker)
-      → muestra botón nativo que abre ventana PayPal con monto pre-cargado
+   PayPal SDK loader — singleton, carga el script una sola vez
    ═══════════════════════════════════════════════════════════════════════════ */
-
-// URL de fallback: abre PayPal con monto y descripción, acepta tarjeta sin cuenta
-function paypalFallbackUrl(items, lang) {
-  const total = items.reduce((s, p) => s + p.price, 0).toFixed(2);
-  const desc = items.map(p => p.name[lang]).join(", ");
-  // PayPal checkout directo — el cliente puede pagar con tarjeta sin login
-  return `https://www.paypal.com/checkoutnow?token=&useraction=commit&amount=${total}&currencyCode=USD&description=${encodeURIComponent("Medu 3D: " + desc)}`;
+let sdkPromise = null;
+function loadPayPalSDK() {
+  if (sdkPromise) return sdkPromise;
+  sdkPromise = new Promise((resolve, reject) => {
+    if (window.paypal) { resolve(window.paypal); return; }
+    const s = document.createElement("script");
+    s.id  = "paypal-sdk";
+    s.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture&enable-funding=card&components=buttons`;
+    s.setAttribute("data-page-type", "checkout");
+    s.onload  = () => resolve(window.paypal);
+    s.onerror = () => { sdkPromise = null; reject(new Error("PayPal SDK failed")); };
+    document.head.appendChild(s);
+  });
+  return sdkPromise;
 }
 
-function PayPalCheckout({ items, lang, onSuccess }) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   PayPalButton — funciona en carrito (varios items) y en producto individual.
+   El precio viene del código, no de PayPal. No hay nada que configurar
+   por producto en el dashboard de PayPal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PayPalButton({ items, lang, onSuccess }) {
   const containerRef = useRef(null);
-  const cardFieldsRef = useRef(null);
-  const buttonsRef = useRef(null);
-  const [sdkStatus, setSdkStatus] = useState("loading"); // loading | ready | failed
-  const [paying, setPaying] = useState(false);
-  const [cardError, setCardError] = useState("");
-  const [showCardForm, setShowCardForm] = useState(false);
+  const btnRef       = useRef(null);
+  const [status, setStatus] = useState("loading"); // loading | ready | failed
 
-  const total = items.reduce((s, p) => s + p.price, 0).toFixed(2);
-  const itemKey = items.map(i => i.id).join(",");
-
-  // Limpia instancias previas de PayPal
-  const cleanup = () => {
-    if (buttonsRef.current) { try { buttonsRef.current.close(); } catch {} buttonsRef.current = null; }
-    if (cardFieldsRef.current) { try { cardFieldsRef.current.close(); } catch {} cardFieldsRef.current = null; }
-    if (containerRef.current) containerRef.current.innerHTML = "";
-    ["pp-card-number","pp-card-expiry","pp-card-cvv","pp-card-name"].forEach(id => {
-      const el = document.getElementById(id); if (el) el.innerHTML = "";
-    });
-  };
+  const total   = items.reduce((s, p) => s + p.price, 0).toFixed(2);
+  const itemKey = items.map(i => i.cartId || i.id).join(",") + total;
 
   useEffect(() => {
     if (!items.length) return;
-    setSdkStatus("loading");
-    setShowCardForm(false);
-    cleanup();
+    setStatus("loading");
+    if (btnRef.current) { try { btnRef.current.close(); } catch {} btnRef.current = null; }
+    if (containerRef.current) containerRef.current.innerHTML = "";
 
-    const loadSDK = () => new Promise((resolve, reject) => {
-      // Elimina SDK anterior si tenía parámetros distintos
-      const existing = document.getElementById("paypal-sdk");
-      if (existing) existing.remove();
-      delete window.paypal;
-
-      const script = document.createElement("script");
-      script.id = "paypal-sdk";
-      // enable-funding=card  → muestra botón "Pagar con tarjeta" + Card Fields
-      // components=buttons,card-fields → habilita formulario de tarjeta inline
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture&enable-funding=card&components=buttons,card-fields`;
-      script.setAttribute("data-page-type", "checkout");
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-
-    const createOrder = () => {
-      const itemList = items.map(p => ({
-        name: p.name[lang] || p.name.es,
-        unit_amount: { currency_code: "USD", value: p.price.toFixed(2) },
-        quantity: "1",
-      }));
-      return window.paypal.Orders.create({
-        purchase_units: [{
-          description: "Medu 3D — Modelos Anatómicos 3D",
-          amount: {
-            currency_code: "USD",
-            value: total,
-            breakdown: { item_total: { currency_code: "USD", value: total } },
-          },
-          items: itemList,
-        }],
-      }).then(o => o.id);
-    };
-
-    const createOrderActions = (data, actions) => {
-      const itemList = items.map(p => ({
-        name: p.name[lang] || p.name.es,
-        unit_amount: { currency_code: "USD", value: p.price.toFixed(2) },
-        quantity: "1",
-      }));
-      return actions.order.create({
-        purchase_units: [{
-          description: "Medu 3D — Modelos Anatómicos 3D",
-          amount: {
-            currency_code: "USD",
-            value: total,
-            breakdown: { item_total: { currency_code: "USD", value: total } },
-          },
-          items: itemList,
-        }],
-      });
-    };
-
-    const renderPayPal = async () => {
-      await loadSDK();
-      if (!window.paypal || !containerRef.current) { setSdkStatus("failed"); return; }
-
-      // ── Botón PayPal estándar ──────────────────────────────────────────
-      buttonsRef.current = window.paypal.Buttons({
-        style: { layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 44 },
-        createOrder: createOrderActions,
+    loadPayPalSDK().then(paypal => {
+      if (!containerRef.current) return;
+      btnRef.current = paypal.Buttons({
+        style: { layout: "vertical", color: "blue", shape: "rect", label: "pay", height: 48 },
+        createOrder: (data, actions) => actions.order.create({
+          purchase_units: [{
+            description: "Medu 3D — Modelos Anatómicos 3D",
+            amount: {
+              currency_code: "USD", value: total,
+              breakdown: { item_total: { currency_code: "USD", value: total } },
+            },
+            items: items.map(p => ({
+              name: p.name[lang] || p.name.es,
+              unit_amount: { currency_code: "USD", value: p.price.toFixed(2) },
+              quantity: "1",
+            })),
+          }],
+        }),
         onApprove: async (data, actions) => {
           const order = await actions.order.capture();
           if (onSuccess) onSuccess(order);
         },
-        onError: (err) => { console.error("PayPal buttons error:", err); setSdkStatus("failed"); },
+        onError: (err) => { console.error("PayPal error:", err); setStatus("failed"); },
       });
-
-      if (buttonsRef.current.isEligible() && containerRef.current) {
-        await buttonsRef.current.render(containerRef.current);
+      if (btnRef.current.isEligible()) {
+        btnRef.current.render(containerRef.current).then(() => setStatus("ready"));
+      } else {
+        setStatus("failed");
       }
+    }).catch(() => setStatus("failed"));
 
-      // ── Card Fields (formulario de tarjeta inline) ─────────────────────
-      if (window.paypal.CardFields) {
-        const fields = window.paypal.CardFields({
-          createOrder: createOrder,
-          onApprove: async (data) => {
-            setPaying(true);
-            setCardError("");
-            try {
-              const res = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${data.orderID}/capture`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-              });
-              const order = await res.json();
-              if (onSuccess) onSuccess(order);
-            } catch (e) {
-              setCardError(lang === "es" ? "Error al procesar el pago. Intenta de nuevo." : "Payment error. Please try again.");
-            } finally { setPaying(false); }
-          },
-          onError: (err) => {
-            console.error("Card fields error:", err);
-            setCardError(lang === "es" ? "Error con la tarjeta. Verifica los datos." : "Card error. Please check your details.");
-            setPaying(false);
-          },
-          style: {
-            input: { "font-family": "Montserrat, sans-serif", "font-size": "14px", "color": "#15172a" },
-            ".invalid": { "color": "#e05555" },
-          },
-        });
-
-        if (fields.isEligible()) {
-          cardFieldsRef.current = fields;
-          const mountIfExists = (id, mountFn) => {
-            const el = document.getElementById(id); if (el) mountFn(el);
-          };
-          mountIfExists("pp-card-number", el => fields.NumberField().render(el));
-          mountIfExists("pp-card-expiry", el => fields.ExpiryField().render(el));
-          mountIfExists("pp-card-cvv", el => fields.CVVField().render(el));
-          mountIfExists("pp-card-name", el => fields.NameField && fields.NameField().render(el));
-          setShowCardForm(true);
-        }
-      }
-
-      setSdkStatus("ready");
-    };
-
-    renderPayPal().catch((err) => {
-      console.warn("PayPal SDK falló, usando fallback:", err);
-      setSdkStatus("failed");
-    });
-
-    return cleanup;
-  }, [itemKey, total, lang]);
+    return () => { if (btnRef.current) { try { btnRef.current.close(); } catch {} btnRef.current = null; } };
+  }, [itemKey, lang]);
 
   if (!items.length) return null;
 
-  // ── FALLBACK: SDK no disponible (localhost / dominio no aprobado) ──────
-  if (sdkStatus === "failed") {
-    return (
-      <div style={{ marginTop: 4 }}>
-        <a
-          href={`https://www.paypal.com/pay?receiver=manuelczelaya%40gmail.com&amount=${total}&currency_code=USD&item_name=${encodeURIComponent("Medu 3D (" + items.map(p => p.name[lang]).join(", ") + ")")}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-            width: "100%", padding: "13px 20px", background: "#0070BA", color: "#fff",
-            borderRadius: 10, textDecoration: "none", fontFamily: "Montserrat, sans-serif",
-            fontWeight: 700, fontSize: 15, transition: "background .2s",
-          }}
-          onMouseOver={e => e.currentTarget.style.background = "#003087"}
-          onMouseOut={e => e.currentTarget.style.background = "#0070BA"}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 4.643-5.813 4.643h-2.19a.96.96 0 0 0-.949.813l-1.12 7.107-.31 1.964a.42.42 0 0 0 .416.49h2.938l.478-3.018.03-.174a.96.96 0 0 1 .948-.814h.599c3.863 0 6.888-1.57 7.772-6.106.37-1.9.179-3.488-.751-4.618z"/>
-          </svg>
-          {lang === "es" ? `Pagar $${total} con PayPal / Tarjeta` : `Pay $${total} with PayPal / Card`}
-        </a>
-        <p style={{ fontSize: 11, color: "var(--fg3)", textAlign: "center", marginTop: 8 }}>
-          {lang === "es"
-            ? "Se abrirá PayPal — puedes pagar con tarjeta sin crear cuenta"
-            : "PayPal will open — you can pay by card without an account"}
-        </p>
-      </div>
-    );
-  }
-
-  // ── LOADING ────────────────────────────────────────────────────────────
-  if (sdkStatus === "loading") {
-    return (
-      <div style={{ padding: "16px 0", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "var(--fg3)", fontSize: 13 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
+  return (
+    <div>
+      {status === "loading" && (
+        <div style={{ padding: "14px 0", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "var(--fg3)", fontSize: 13 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
           </svg>
           <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-          {lang === "es" ? "Cargando métodos de pago..." : "Loading payment methods..."}
-        </div>
-      </div>
-    );
-  }
-
-  // ── SDK CARGADO: Botón PayPal + Formulario de tarjeta ─────────────────
-  return (
-    <div>
-      {/* Contenedor del botón PayPal estándar */}
-      <div ref={containerRef} style={{ width: "100%", minHeight: 44 }} />
-
-      {/* Formulario de tarjeta inline (Card Fields) */}
-      {showCardForm && (
-        <div style={{ marginTop: 12, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, padding: "16px 14px", background: "var(--bg2)" }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--fg3)", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.8px" }}>
-            {lang === "es" ? "— O paga con tarjeta —" : "— Or pay with card —"}
-          </p>
-          <div id="pp-card-number" style={cardFieldStyle} />
-          <div style={{ display: "flex", gap: 10 }}>
-            <div id="pp-card-expiry" style={{ ...cardFieldStyle, flex: 1 }} />
-            <div id="pp-card-cvv" style={{ ...cardFieldStyle, flex: 1 }} />
-          </div>
-          <div id="pp-card-name" style={cardFieldStyle} />
-          {cardError && <p style={{ color: "#e05555", fontSize: 12, marginBottom: 8 }}>{cardError}</p>}
-          <button
-            onClick={() => { if (cardFieldsRef.current) { setPaying(true); cardFieldsRef.current.submit().catch(e => { setPaying(false); setCardError(lang === "es" ? "Verifica los datos de tu tarjeta." : "Check your card details."); }); }}}
-            disabled={paying}
-            style={{
-              width: "100%", padding: "12px", background: paying ? "var(--fg3)" : "var(--ac)",
-              color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700,
-              cursor: paying ? "not-allowed" : "pointer", fontFamily: "Montserrat, sans-serif",
-              marginTop: 4, transition: "background .2s",
-            }}
-          >
-            {paying
-              ? (lang === "es" ? "Procesando..." : "Processing...")
-              : (lang === "es" ? `Pagar con tarjeta $${total}` : `Pay by card $${total}`)}
-          </button>
+          {lang === "es" ? "Cargando métodos de pago..." : "Loading payment options..."}
         </div>
       )}
+      {status === "failed" && (
+        <a href={`https://www.paypal.com/paypalme/medu3d/${total}USD`} target="_blank" rel="noopener noreferrer"
+          style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", padding:"14px 20px", background:"#0070BA", color:"#fff", borderRadius:12, textDecoration:"none", fontFamily:"Montserrat,sans-serif", fontWeight:700, fontSize:15, transition:"background .2s", boxSizing:"border-box" }}
+          onMouseOver={e=>e.currentTarget.style.background="#003087"} onMouseOut={e=>e.currentTarget.style.background="#0070BA"}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 4.643-5.813 4.643h-2.19a.96.96 0 0 0-.949.813l-1.12 7.107-.31 1.964a.42.42 0 0 0 .416.49h2.938l.478-3.018.03-.174a.96.96 0 0 1 .948-.814h.599c3.863 0 6.888-1.57 7.772-6.106.37-1.9.179-3.488-.751-4.618z"/></svg>
+          {lang === "es" ? `Pagar $${total} · PayPal / Tarjeta` : `Pay $${total} · PayPal / Card`}
+        </a>
+      )}
+      <div ref={containerRef} style={{ display: status === "failed" ? "none" : "block", width: "100%" }} />
     </div>
   );
 }
-
-const cardFieldStyle = {
-  height: 42, border: "1px solid rgba(0,0,0,0.09)", borderRadius: 9,
-  marginBottom: 10, padding: "0 4px", background: "var(--bg)",
-  overflow: "hidden",
-};
 /* ═══════════════════════════════════════════════════════════════════════════
    LazyViewer — solo carga el modelo 3D cuando la tarjeta es visible
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -516,57 +348,6 @@ function LazyViewer({ color, modelId, bgColor, rotation = [0,0,0] }) {
             </svg>
           </div>
       }
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Acepta tarjeta directamente sin cuenta PayPal
-   ═══════════════════════════════════════════════════════════════════════════ */
-function HostedPayPalButton({ hostedBtnId, lang }) {
-  if (!hostedBtnId) return null;
-
-  const handleClick = () => {
-    const form = document.createElement("form");
-    form.action = "https://www.paypal.com/cgi-bin/webscr";
-    form.method = "post";
-    form.target = "_blank";
-    const fields = [["cmd","_s-xclick"],["hosted_button_id",hostedBtnId],["currency_code","USD"]];
-    fields.forEach(([n,v]) => {
-      const inp = document.createElement("input");
-      inp.type = "hidden"; inp.name = n; inp.value = v;
-      form.appendChild(inp);
-    });
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-  };
-
-  return (
-    <div style={{ marginTop: 8 }}>
-      <button
-        onClick={handleClick}
-        style={{
-          width: "100%", padding: "13px 20px",
-          background: "#0070BA", color: "#fff", border: "none",
-          borderRadius: 10, fontFamily: "Montserrat, sans-serif",
-          fontWeight: 700, fontSize: 15, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          transition: "background .2s",
-        }}
-        onMouseOver={e => e.currentTarget.style.background = "#003087"}
-        onMouseOut={e => e.currentTarget.style.background = "#0070BA"}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 4.643-5.813 4.643h-2.19a.96.96 0 0 0-.949.813l-1.12 7.107-.31 1.964a.42.42 0 0 0 .416.49h2.938l.478-3.018.03-.174a.96.96 0 0 1 .948-.814h.599c3.863 0 6.888-1.57 7.772-6.106.37-1.9.179-3.488-.751-4.618z"/>
-        </svg>
-        {lang === "es" ? "Comprar ahora · PayPal / Tarjeta" : "Buy now · PayPal / Card"}
-      </button>
-      <p style={{ fontSize: 11, color: "var(--fg3)", textAlign: "center", marginTop: 7 }}>
-        {lang === "es"
-          ? "→ Ingresa tu email → clic Siguiente → aparecerá el formulario de tarjeta (Visa / Mastercard / Amex)"
-          : "→ Enter your email → click Next → card form will appear (Visa / Mastercard / Amex)"}
-      </p>
     </div>
   );
 }
@@ -1255,7 +1036,7 @@ footer p{font-size:12px;color:var(--fg3)}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               {t.cart.paypalNote}
             </p>
-            <PayPalCheckout
+            <PayPalButton
               items={cart}
               lang={lang}
               onSuccess={handlePaymentSuccess}
@@ -1530,7 +1311,11 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
                 </button>
               </div>
               <div className="pd-paypal">
-                <HostedPayPalButton hostedBtnId={prod.hostedBtn} lang={lang} />
+                <PayPalButton
+                  items={[{ ...prod, price: prod.priceSlt, cartId: prod.id + "_stl" }]}
+                  lang={lang}
+                  onSuccess={onPaySuccess}
+                />
               </div>
             </>
           )}
@@ -1565,7 +1350,11 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
                 </button>
               </div>
               <div className="pd-paypal">
-                <HostedPayPalButton hostedBtnId={prod.hostedBtnPrint} lang={lang} />
+                <PayPalButton
+                  items={[{ ...prod, price: prod.pricePrint, cartId: prod.id + "_print" }]}
+                  lang={lang}
+                  onSuccess={onPaySuccess}
+                />
               </div>
             </>
           )}
