@@ -111,7 +111,7 @@ const T = {
    ─────────────────────────────────────────────────────────────────────────── */
 const P = [
   { id: "heart", modelId: "corazon",
-    priceSlt: 54.99, pricePrint: null,
+    priceSlt: 34.99, pricePrint: null,
     hostedBtn: "MDVGEXSZCHEQY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e05555", geo: "heart",
     region: "torax", tissue: "cardiovascular",
@@ -121,7 +121,7 @@ const P = [
     desc: { es: "Modelo detallado del corazón humano completo con las 4 cámaras cardíacas, válvulas y grandes vasos. Segmentado desde CT con contraste. Ideal para educación cardiovascular y planificación quirúrgica.", en: "Detailed model of the complete human heart with all 4 cardiac chambers, valves and great vessels. Segmented from contrast CT. Ideal for cardiovascular education and surgical planning." },
   },
   { id: "brain", modelId: "brain",
-    priceSlt: 49.99, pricePrint: null,
+    priceSlt: 24.99, pricePrint: null,
     hostedBtn: "49659K538LTZ6", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c98a90", geo: "brain",
     region: "cabeza", tissue: "nervioso",
@@ -131,7 +131,7 @@ const P = [
     desc: { es: "Modelo cerebral con surcos y circunvoluciones detalladas, hemisferios separados, cerebelo y tronco encefálico. Segmentado desde MRI T1. Para neurociencia y educación.", en: "Brain model with detailed sulci and gyri, separated hemispheres, cerebellum and brainstem. Segmented from T1 MRI. For neuroscience and education." },
   },
   { id: "lungs", modelId: "lungs",
-    priceSlt: 49.99, pricePrint: null,
+    priceSlt: 24.99, pricePrint: null,
     hostedBtn: "8BZZW5EGQNZAJ", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e8a0b0", geo: "lungs",
     region: "torax", tissue: "respiratorio",
@@ -141,7 +141,7 @@ const P = [
     desc: { es: "Modelo de pulmones con diferenciación de pulmón izquierdo y derecho, árbol bronquial y estructuras vasculares. Segmentado desde CT de tórax. Para neumología y educación médica.", en: "Lung model with differentiated left and right lungs, bronchial tree and vascular structures. Segmented from chest CT. For pulmonology and medical education." },
   },
   { id: "liver", modelId: "model",
-    priceSlt: 44.99, pricePrint: null,
+    priceSlt: 19.99, pricePrint: null,
     hostedBtn: "FJJB3XH8FURZY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5703a", geo: "liver",
     region: "abdomen", tissue: "visceral",
@@ -151,7 +151,7 @@ const P = [
     desc: { es: "Modelo hepático con segmentación de lóbulos y vasculatura portal y hepática. Segmentado desde CT con contraste. Para hepatología y cirugía.", en: "Hepatic model with lobe segmentation and portal and hepatic vasculature. Segmented from contrast CT. For hepatology and surgery." },
   },
   { id: "skull", modelId: "craneo",
-    priceSlt: 44.99, pricePrint: null,
+    priceSlt: 34.99, pricePrint: null,
     hostedBtn: "C757MAF6AM8YA", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c4a882", geo: "skull",
     region: "cabeza", tissue: "oseo",
@@ -161,7 +161,7 @@ const P = [
     desc: { es: "Cráneo completo con mandíbula separable. Incluye suturas craneales, forámenes y procesos óseos. Segmentado desde CT de alta resolución (0.5mm). Para educación anatómica y odontología.", en: "Complete skull with separable mandible. Includes cranial sutures, foramina and bony processes. Segmented from high-resolution CT (0.5mm). For anatomical education and dentistry." },
   },
   { id: "hand", modelId: "hand",
-    priceSlt: 44.99, pricePrint: null,
+    priceSlt: 29.99, pricePrint: null,
     hostedBtn: "6U65AC2JJEXFL", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#d4b896", geo: "hand",
     region: "extremidades", tissue: "oseo",
@@ -171,7 +171,7 @@ const P = [
     desc: { es: "Conjunto completo de los 27 huesos de la mano: huesos del carpo, metacarpianos y falanges. Segmentado desde CT de alta resolución. Ideal para cirugía ortopédica y traumatología.", en: "Complete set of 27 hand bones: carpal bones, metacarpals and phalanges. Segmented from high-resolution CT. Ideal for orthopedic surgery and traumatology." },
   },
   { id: "foot", modelId: "foot",
-    priceSlt: 44.99, pricePrint: null,
+    priceSlt: 29.99, pricePrint: null,
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
     region: "extremidades", tissue: "oseo",
@@ -181,7 +181,7 @@ const P = [
     desc: { es: "Conjunto completo de los 26 huesos del pie: tarso, metatarsianos y falanges. Segmentado desde CT. Para podología, ortopedia y biomecánica.", en: "Complete set of 26 foot bones: tarsals, metatarsals and phalanges. Segmented from CT. For podiatry, orthopedics and biomechanics." },
   },
   { id: "spine", modelId: "vertebras",
-    priceSlt: 44.99, pricePrint: null,
+    priceSlt: 29.99, pricePrint: null,
     hostedBtn: "637LDGMDRNE5N", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#7a8fa3", geo: "spine",
     region: "columna", tissue: "oseo",
@@ -191,7 +191,7 @@ const P = [
     desc: { es: "Columna vertebral completa desde T1 hasta L5 con sacro y discos intervertebrales diferenciados. Detalle de procesos espinosos, transversos y articulares. Para estudio ortopédico y quirúrgico.", en: "Complete spine from T1 to L5 with sacrum and differentiated intervertebral discs. Detail of spinous, transverse and articular processes. For orthopedic and surgical study." },
   },
   { id: "kidney", modelId: "rinones",
-    priceSlt: 39.99, pricePrint: null,
+    priceSlt: 19.99, pricePrint: null,
     hostedBtn: "22N8FEKMP8FAY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#9e6b5a", geo: "kidney",
     region: "abdomen", tissue: "visceral",
@@ -201,7 +201,7 @@ const P = [
     desc: { es: "Riñón con arterias y venas renales diferenciadas y cápsula renal. Para nefrología, urología y educación.", en: "Kidney with color-differentiated renal arteries and veins and renal capsule. For nephrology, urology and education." },
   },
   { id: "pelvis", modelId: "pelvis",
-    priceSlt: 39.99, pricePrint: null,
+    priceSlt: 19.99, pricePrint: null,
     hostedBtn: "UCHEK3PJFQMBW", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#b5a48a", geo: "pelvis",
     region: "pelvis", tissue: "oseo",
@@ -868,7 +868,7 @@ nav{position:fixed;top:0;left:0;right:0;padding:0 48px;height:68px;display:flex;
 
 /* ABOUT PAGE */
 .ap{padding:0 0 80px;max-width:1100px;margin:0 auto}
-.ap-hero{background:linear-gradient(135deg,#0b3c73 0%,#071e3d 100%);padding:80px 60px;display:grid;grid-template-columns:1fr 320px;gap:60px;align-items:center;position:relative;overflow:hidden}
+.ap-hero{background:linear-gradient(135deg,#0b3c73 0%,#071e3d 100%);padding:80px 60px;display:block;position:relative;overflow:hidden}
 .ap-hero::before{content:'';position:absolute;right:-100px;top:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(214,72,48,0.12),transparent 65%);pointer-events:none}
 .ap-hero-text h1{font-size:clamp(28px,4vw,48px);color:#fff;font-weight:800;margin-bottom:6px;letter-spacing:-0.5px}
 .ap-hero-text h2{font-size:16px;color:rgba(255,255,255,0.55);font-weight:500;margin-bottom:24px;letter-spacing:.5px;text-transform:uppercase}
@@ -926,21 +926,22 @@ nav{position:fixed;top:0;left:0;right:0;padding:0 48px;height:68px;display:flex;
 .ferr{text-align:center;padding:12px;color:#e05555;font-size:13px;background:rgba(224,85,85,0.06);border-radius:10px;margin-bottom:10px}
 .ce{display:block;text-align:center;font-size:18px;color:var(--ac);text-decoration:none;margin-bottom:28px;font-weight:500}
 
-/* CART SIDEBAR */
-.co{position:fixed;inset:0;background:rgba(0,0,0,0.25);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}.co.open{opacity:1;pointer-events:all}
-.cs{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:92vw;background:var(--bg2);z-index:301;transform:translateX(100%);transition:transform .35s cubic-bezier(.25,.46,.45,.94);box-shadow:-6px 0 36px rgba(0,0,0,0.08);display:flex;flex-direction:column}.cs.open{transform:translateX(0)}
-.cs-h{padding:18px 22px;border-bottom:1px solid rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center}.cs-h h3{font-size:17px;font-family:'Montserrat';font-weight:600}
-.cs-x{background:none;border:none;color:var(--fg3);cursor:pointer;font-size:20px;padding:4px}
-.cs-i{flex:1;overflow-y:auto;padding:14px 22px}
-.cit{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,0.03)}
-.cit-c{width:38px;height:38px;border-radius:10px;flex-shrink:0}
-.cit-i{flex:1}.cit-i h4{font-size:13px;font-weight:600;margin-bottom:1px}.cit-i span{font-size:12px;color:var(--fg3)}
-.cit-p{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600}
-.cit-r{background:none;border:none;color:var(--fg3);font-size:11px;cursor:pointer;margin-left:6px;text-decoration:underline;font-family:'Montserrat'}.cit-r:hover{color:#e05555}
+/* CART MODAL (checkout overlay — full scrollable) */
+.co{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}.co.open{opacity:1;pointer-events:all}
+.cs{background:var(--bg2);z-index:301;width:100%;max-width:560px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.18);margin:auto;transform:translateY(20px) scale(0.97);transition:transform .35s cubic-bezier(.25,.46,.45,.94);opacity:0;pointer-events:none}.co.open .cs{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.cs-h{padding:22px 28px 18px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:20px 20px 0 0}.cs-h h3{font-size:18px;font-family:'Montserrat';font-weight:700}
+.cs-x{background:none;border:none;color:var(--fg3);cursor:pointer;font-size:20px;padding:4px;border-radius:6px;transition:color .2s}.cs-x:hover{color:var(--fg)}
+.cs-i{padding:8px 28px 16px}
+.cit{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,0.04)}
+.cit-c{width:42px;height:42px;border-radius:10px;flex-shrink:0}
+.cit-i{flex:1}.cit-i h4{font-size:14px;font-weight:600;margin-bottom:2px}.cit-i span{font-size:12px;color:var(--fg3)}
+.cit-p{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:600}
+.cit-r{background:none;border:none;color:var(--fg3);font-size:11px;cursor:pointer;margin-left:6px;text-decoration:underline;font-family:'Montserrat';transition:color .2s}.cit-r:hover{color:#e05555}
 .cs-e{text-align:center;padding:50px 20px;color:var(--fg3)}.cs-e p{margin-bottom:14px}
-.cs-f{padding:18px 22px;border-top:1px solid rgba(0,0,0,0.05)}
-.cs-t{display:flex;justify-content:space-between;margin-bottom:4px;font-size:15px;font-weight:600}.cs-t span:last-child{font-family:'Montserrat',sans-serif;font-size:20px}
-.cs-note{font-size:11px;color:var(--fg3);margin-bottom:14px;display:flex;align-items:center;gap:5px}
+.cs-f{padding:20px 28px 28px}
+.cs-divider{height:1px;background:rgba(0,0,0,0.06);margin-bottom:16px}
+.cs-t{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:15px;font-weight:600}.cs-t span:last-child{font-family:'Montserrat',sans-serif;font-size:22px;color:var(--fg)}
+.cs-note{font-size:11px;color:var(--fg3);margin-bottom:16px;display:flex;align-items:center;gap:5px}
 .cs-ok{text-align:center;padding:24px;background:rgba(8,145,178,0.05);border-radius:12px;color:var(--ac);font-size:15px;font-weight:500}
 
 /* PAYMENT SUCCESS MODAL */
@@ -1013,36 +1014,59 @@ footer p{font-size:12px;color:var(--fg3)}
         <button className="lb" onClick={() => { setLang(lang === "es" ? "en" : "es"); setMenuOpen(false); }}>{lang === "es" ? "English" : "Español"}</button>
       </div>
 
-      {/* CART */}
-      <div className={`co ${cartOpen ? "open" : ""}`} onClick={() => setCartOpen(false)} />
-      <div className={`cs ${cartOpen ? "open" : ""}`}>
-        <div className="cs-h"><h3>{t.cart.title}</h3><button className="cs-x" onClick={() => setCartOpen(false)}>✕</button></div>
-        <div className="cs-i">
-          {cart.length === 0 ? (
-            <div className="cs-e"><p>{t.cart.empty}</p><button className="hero-cta" onClick={() => { setCartOpen(false); goPage("catalog"); }}>{t.cart.browse}</button></div>
-          ) : cart.map(p => (
-            <div className="cit" key={p.cartId}>
-              <div className="cit-c" style={{ background: p.color }} />
-              <div className="cit-i"><h4>{p.name[lang]}</h4><span>{p.formats}</span></div>
-              <div className="cit-p">${p.price}</div>
-              <button className="cit-r" onClick={() => rmCart(p.cartId)}>{t.cart.remove}</button>
+      {/* CART MODAL */}
+      <div className={`co ${cartOpen ? "open" : ""}`} onClick={(e) => { if (e.target === e.currentTarget) setCartOpen(false); }}>
+        <div className={`cs`}>
+          {/* Header */}
+          <div className="cs-h">
+            <div>
+              <h3>{t.cart.title}</h3>
+              {cart.length > 0 && <span style={{fontSize:12,color:"var(--fg3)",fontWeight:500}}>{cart.length} {lang==="es" ? "producto" : "item"}{cart.length!==1?"s":""}</span>}
             </div>
-          ))}
-        </div>
-        {cart.length > 0 && (
-          <div className="cs-f">
-            <div className="cs-t"><span>{t.cart.total}</span><span>${total}</span></div>
-            <p className="cs-note">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              {t.cart.paypalNote}
-            </p>
-            <PayPalButton
-              items={cart}
-              lang={lang}
-              onSuccess={handlePaymentSuccess}
-            />
+            <button className="cs-x" onClick={() => setCartOpen(false)}>✕</button>
           </div>
-        )}
+
+          {/* Items */}
+          <div className="cs-i">
+            {cart.length === 0 ? (
+              <div className="cs-e">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{marginBottom:12,opacity:.3}}><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <p>{t.cart.empty}</p>
+                <button className="hero-cta" onClick={() => { setCartOpen(false); goPage("catalog"); }}>{t.cart.browse}</button>
+              </div>
+            ) : cart.map(p => (
+              <div className="cit" key={p.cartId}>
+                <div className="cit-c" style={{ background: p.color }} />
+                <div className="cit-i">
+                  <h4>{p.name[lang]}</h4>
+                  <span>{p.formats}</span>
+                </div>
+                <div className="cit-p">${p.price.toFixed(2)}</div>
+                <button className="cit-r" onClick={() => rmCart(p.cartId)}>{t.cart.remove}</button>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer: total + payment */}
+          {cart.length > 0 && (
+            <div className="cs-f">
+              <div className="cs-divider" />
+              <div className="cs-t">
+                <span>{t.cart.total}</span>
+                <span>${total}</span>
+              </div>
+              <p className="cs-note">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                {t.cart.paypalNote}
+              </p>
+              <PayPalButton
+                items={cart}
+                lang={lang}
+                onSuccess={handlePaymentSuccess}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* PAGES */}
@@ -1384,12 +1408,6 @@ function AboutPage({ lang }) {
               ? "El modelado e impresión 3D están abriendo puertas a avances médicos que antes parecían imposibles. Al dominar estas herramientas, quise hacer algo simple pero poderoso: democratizar el acceso a la anatomía de precisión, y ponerla al alcance de quienes realmente la necesitan."
               : "3D modeling and printing are opening doors to medical advances that once seemed impossible. By mastering these tools, I wanted to do something simple yet powerful: democratize access to precision anatomy, and put it within reach of those who truly need it."}
           </p>
-        </div>
-        <div className="ap-photo">
-          <div className="ap-photo-placeholder">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <span>{es ? "Tu foto aquí" : "Your photo here"}</span>
-          </div>
         </div>
       </div>
 
