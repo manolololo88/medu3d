@@ -110,7 +110,7 @@ const T = {
    4. Para geo nuevos sin placeholder, usa "sphere" como fallback temporal
    ─────────────────────────────────────────────────────────────────────────── */
 const P = [
-  { id: "heart", modelId: "model",
+  { id: "heart", modelId: "corazon",
     priceSlt: 54.99, pricePrint: null,
     hostedBtn: "MDVGEXSZCHEQY", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e05555", geo: "heart",
@@ -119,7 +119,7 @@ const P = [
     tag: { es: "4 cámaras · Válvulas · Grandes vasos", en: "4 chambers · Valves · Great vessels" },
     desc: { es: "Modelo detallado del corazón humano completo con las 4 cámaras cardíacas, válvulas y grandes vasos. Segmentado desde CT con contraste. Ideal para educación cardiovascular y planificación quirúrgica.", en: "Detailed model of the complete human heart with all 4 cardiac chambers, valves and great vessels. Segmented from contrast CT. Ideal for cardiovascular education and surgical planning." },
   },
-  { id: "brain", modelId: "model",
+  { id: "brain", modelId: "brain",
     priceSlt: 49.99, pricePrint: null,
     hostedBtn: "49659K538LTZ6", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c98a90", geo: "brain",
@@ -128,7 +128,7 @@ const P = [
     tag: { es: "Hemisferios · Surcos · Cerebelo", en: "Hemispheres · Sulci · Cerebellum" },
     desc: { es: "Modelo cerebral con surcos y circunvoluciones detalladas, hemisferios separados, cerebelo y tronco encefálico. Segmentado desde MRI T1. Para neurociencia y educación.", en: "Brain model with detailed sulci and gyri, separated hemispheres, cerebellum and brainstem. Segmented from T1 MRI. For neuroscience and education." },
   },
-  { id: "lungs", modelId: "model",
+  { id: "lungs", modelId: "lungs",
     priceSlt: 49.99, pricePrint: null,
     hostedBtn: "8BZZW5EGQNZAJ", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#e8a0b0", geo: "lungs",
@@ -146,7 +146,7 @@ const P = [
     tag: { es: "Lóbulos · Vesícula · Vasculatura", en: "Lobes · Gallbladder · Vasculature" },
     desc: { es: "Modelo hepático con segmentación de lóbulos, vesícula biliar y vasculatura portal y hepática. Segmentado desde CT con contraste. Para hepatología y cirugía.", en: "Hepatic model with lobe segmentation, gallbladder and portal and hepatic vasculature. Segmented from contrast CT. For hepatology and surgery." },
   },
-  { id: "skull", modelId: "model",
+  { id: "skull", modelId: "craneo",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "C757MAF6AM8YA", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c4a882", geo: "skull",
@@ -155,7 +155,7 @@ const P = [
     tag: { es: "Mandíbula articulada · Alta resolución", en: "Articulated mandible · High resolution" },
     desc: { es: "Cráneo completo con mandíbula separable. Incluye suturas craneales, forámenes y procesos óseos. Segmentado desde CT de alta resolución (0.5mm). Para educación anatómica y odontología.", en: "Complete skull with separable mandible. Includes cranial sutures, foramina and bony processes. Segmented from high-resolution CT (0.5mm). For anatomical education and dentistry." },
   },
-  { id: "hand", modelId: "model",
+  { id: "hand", modelId: "hand",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "6U65AC2JJEXFL", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#d4b896", geo: "hand",
@@ -164,7 +164,7 @@ const P = [
     tag: { es: "27 huesos · Carpo · Metacarpo · Falanges", en: "27 bones · Carpals · Metacarpals · Phalanges" },
     desc: { es: "Conjunto completo de los 27 huesos de la mano: huesos del carpo, metacarpianos y falanges. Segmentado desde CT de alta resolución. Ideal para cirugía ortopédica y traumatología.", en: "Complete set of 27 hand bones: carpal bones, metacarpals and phalanges. Segmented from high-resolution CT. Ideal for orthopedic surgery and traumatology." },
   },
-  { id: "foot", modelId: "model",
+  { id: "foot", modelId: "foot",
     priceSlt: 44.99, pricePrint: null,
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
@@ -477,7 +477,39 @@ const cardFieldStyle = {
   marginBottom: 10, padding: "0 4px", background: "var(--bg)",
   overflow: "hidden",
 };
-/* ════════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════
+   LazyViewer — solo carga el modelo 3D cuando la tarjeta es visible
+   ═══════════════════════════════════════════════════════════════════════════ */
+function LazyViewer({ color, modelId, bgColor }) {
+  const wrapRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { rootMargin: "100px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div ref={wrapRef} style={{ width: "100%", height: "100%" }}>
+      {visible
+        ? <Viewer color={color} active={true} modelId={modelId} bgColor={bgColor} />
+        : <div style={{ width:"100%", height:"100%", background:`#${bgColor.toString(16).padStart(6,"0")}`,
+            display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#b0b4c8" strokeWidth="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+      }
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Acepta tarjeta directamente sin cuenta PayPal
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -1410,7 +1442,7 @@ function CatalogPage({ t, lang, cart, addCart, goProd }) {
         : filtered.map(p => {
           const ic = cart.find(c => c.id === p.id && c.cartType === "stl");
           return (<div className="cc" key={p.id}>
-            <div className="ct" onClick={() => goProd(p)}><Viewer color={p.color} active={true} modelId={p.modelId} bgColor={0xe8ebf0} /></div>
+            <div className="ct" onClick={() => goProd(p)}><LazyViewer color={p.color} modelId={p.modelId} bgColor={0xe8ebf0} /></div>
             <div className="ci"><h3 onClick={() => goProd(p)} style={{cursor:"pointer"}}>{p.name[lang]}</h3><p className="tl">{p.tag[lang]}</p>
               <div className="cf">
                 <div>
