@@ -13,6 +13,34 @@ const PAYPAL_CLIENT_ID = "AfSYYHgXDkLFc5SVqwgX96FLwl7W3MUfGN6CsBDaDeVEI4eh5jh15f
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeerrvre";
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   CÓDIGOS DE DESCUENTO
+   ─────────────────────────────────────────────────────────────────────────
+   type: "percent" → descuento porcentual  (ej. 15 = 15% off)
+   type: "fixed"   → descuento monto fijo  (ej. 5 = $5 off)
+   ─────────────────────────────────────────────────────────────────────────
+   Para agregar un código nuevo: copia un bloque { code:... } y pégalo.
+   Para desactivar uno: cambia active a false (no lo borres).
+   ═══════════════════════════════════════════════════════════════════════════ */
+const DISCOUNT_CODES = {
+  "BIENVENIDO15": { type: "percent", value: 15, active: true,
+    label: { es: "15% de descuento — primera compra", en: "15% off — first purchase" } },
+  "REFERIDO10":   { type: "percent", value: 10, active: true,
+    label: { es: "10% de descuento — cliente referido",  en: "10% off — referred customer" } },
+  "MEDU5":        { type: "fixed",   value: 5,  active: true,
+    label: { es: "$5 de descuento",                      en: "$5 off" } },
+};
+
+function applyDiscount(subtotal, code) {
+  if (!code) return { discount: 0, total: subtotal };
+  const c = DISCOUNT_CODES[code.toUpperCase()];
+  if (!c || !c.active) return null; // código inválido
+  const discount = c.type === "percent"
+    ? parseFloat((subtotal * c.value / 100).toFixed(2))
+    : Math.min(c.value, subtotal);
+  return { discount, total: parseFloat((subtotal - discount).toFixed(2)), label: c.label };
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    i18n
    ═══════════════════════════════════════════════════════════════════════════ */
 const T = {
@@ -532,6 +560,8 @@ export default function App() {
   const [selProd, setSelProd] = useState(null);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState(null); // { discount, total, label } | null
   const [hi, setHi] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [phase, setPhase] = useState("idle"); // idle | out | in
@@ -615,10 +645,19 @@ export default function App() {
 
   const addCart = (p, type) => {
     const item = makeCartItem(p, type);
-    if (!cart.find(c => c.cartId === item.cartId)) setCart([...cart, item]);
+    if (!cart.find(c => c.cartId === item.cartId)) {
+      setCart([...cart, item]);
+      setAppliedDiscount(null); // reset descuento al cambiar carrito
+      setDiscountCode("");
+    }
   };
-  const rmCart = cartId => setCart(cart.filter(c => c.cartId !== cartId));
-  const total = cart.reduce((s, p) => s + p.price, 0).toFixed(2);
+  const rmCart = cartId => {
+    setCart(cart.filter(c => c.cartId !== cartId));
+    setAppliedDiscount(null);
+    setDiscountCode("");
+  };
+  const subtotal = parseFloat(cart.reduce((s, p) => s + p.price, 0).toFixed(2));
+  const total = appliedDiscount ? appliedDiscount.total.toFixed(2) : subtotal.toFixed(2);
 
   const goProd = p => {
     setPageVisible(false);
@@ -943,6 +982,17 @@ nav{position:fixed;top:0;left:0;right:0;padding:0 48px;height:68px;display:flex;
 .cs-t{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:15px;font-weight:600}.cs-t span:last-child{font-family:'Montserrat',sans-serif;font-size:22px;color:var(--fg)}
 .cs-note{font-size:11px;color:var(--fg3);margin-bottom:16px;display:flex;align-items:center;gap:5px}
 .cs-ok{text-align:center;padding:24px;background:rgba(8,145,178,0.05);border-radius:12px;color:var(--ac);font-size:15px;font-weight:500}
+/* DISCOUNT CODE */
+.cs-discount{display:flex;gap:8px;margin-bottom:14px}
+.cs-discount input{flex:1;padding:10px 14px;border:1.5px solid rgba(0,0,0,0.08);border-radius:10px;font-size:13px;font-family:'Montserrat',sans-serif;outline:none;background:var(--bg);color:var(--fg);transition:border-color .2s;text-transform:uppercase;letter-spacing:.5px}
+.cs-discount input:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--acs)}
+.cs-discount input::placeholder{text-transform:none;letter-spacing:0}
+.cs-discount-btn{padding:10px 16px;background:var(--navy,#0b3c73);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;transition:background .2s}.cs-discount-btn:hover{background:#0d4a8e}
+.cs-discount-applied{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(8,145,178,0.06);border-radius:9px;border:1px solid rgba(8,145,178,0.15);margin-bottom:14px}
+.cs-discount-applied span{font-size:12px;font-weight:600;color:var(--ac)}
+.cs-discount-remove{background:none;border:none;color:var(--fg3);font-size:11px;cursor:pointer;font-family:'Montserrat';text-decoration:underline}.cs-discount-remove:hover{color:#e05555}
+.cs-discount-err{font-size:11px;color:#e05555;margin-bottom:10px;padding:0 2px}
+.cs-savings{display:flex;justify-content:space-between;font-size:13px;color:var(--ac);font-weight:600;margin-bottom:6px}
 
 /* PAYMENT SUCCESS MODAL */
 .ps-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -1051,6 +1101,61 @@ footer p{font-size:12px;color:var(--fg3)}
           {cart.length > 0 && (
             <div className="cs-f">
               <div className="cs-divider" />
+
+              {/* Discount code input */}
+              {!appliedDiscount ? (
+                <>
+                  <div className="cs-discount">
+                    <input
+                      placeholder={lang === "es" ? "Código de descuento" : "Discount code"}
+                      value={discountCode}
+                      onChange={e => setDiscountCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") {
+                          const result = applyDiscount(subtotal, discountCode);
+                          if (result) setAppliedDiscount(result);
+                        }
+                      }}
+                    />
+                    <button className="cs-discount-btn" onClick={() => {
+                      const result = applyDiscount(subtotal, discountCode);
+                      if (result) setAppliedDiscount(result);
+                    }}>
+                      {lang === "es" ? "Aplicar" : "Apply"}
+                    </button>
+                  </div>
+                  {discountCode && applyDiscount(subtotal, discountCode) === null && (
+                    <p className="cs-discount-err">
+                      {lang === "es" ? "Código inválido o expirado" : "Invalid or expired code"}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="cs-discount-applied">
+                  <span>
+                    🏷 {appliedDiscount.label?.[lang] || discountCode}
+                    {" · "}{lang === "es" ? "ahorras" : "you save"} ${appliedDiscount.discount.toFixed(2)}
+                  </span>
+                  <button className="cs-discount-remove" onClick={() => {
+                    setAppliedDiscount(null); setDiscountCode("");
+                  }}>{lang === "es" ? "Quitar" : "Remove"}</button>
+                </div>
+              )}
+
+              {/* Subtotal + discount breakdown */}
+              {appliedDiscount && (
+                <>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"var(--fg3)",marginBottom:4}}>
+                    <span>{lang === "es" ? "Subtotal" : "Subtotal"}</span>
+                    <span>${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="cs-savings">
+                    <span>{lang === "es" ? "Descuento" : "Discount"}</span>
+                    <span>− ${appliedDiscount.discount.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+
               <div className="cs-t">
                 <span>{t.cart.total}</span>
                 <span>${total}</span>
@@ -1060,7 +1165,7 @@ footer p{font-size:12px;color:var(--fg3)}
                 {t.cart.paypalNote}
               </p>
               <PayPalButton
-                items={cart}
+                items={cart.map(p => ({ ...p, price: parseFloat((p.price * parseFloat(total) / subtotal).toFixed(2)) }))}
                 lang={lang}
                 onSuccess={handlePaymentSuccess}
               />
