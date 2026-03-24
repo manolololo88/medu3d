@@ -88,15 +88,12 @@ window.generateCodes = (prefix, qty, value, type) => {
 };
 
 const SINGLE_USE_CODES = {
-  // ── PRUEBA 99% — genera más con: generateCodes("BV",10,99,"percent") ──
-  "TEST-9999-9999": { type: "percent", value: 99, active: true, batch: "TEST" },
-
-  // ── Bienvenida 15% (primera compra) — genera más con: generateCodes("BV",10,30,"percent") ──
-  "BV-XMKR-7T4N": { type: "percent", value: 30, active: true, batch: "BV" },
-  "BV-2HJQ-9PLC": { type: "percent", value: 30, active: true, batch: "BV" },
-  "BV-RNFT-6W8A": { type: "percent", value: 30, active: true, batch: "BV" },
-  "BV-KD4M-XQPZ": { type: "percent", value: 30, active: true, batch: "BV" },
-  "BV-8TNH-3FJY": { type: "percent", value: 30, active: true, batch: "BV" },
+  // ── Bienvenida 15% (primera compra) — genera más con: generateCodes("BV",10,15,"percent") ──
+  "BV-XMKR-7T4N": { type: "percent", value: 15, active: true, batch: "BV" },
+  "BV-2HJQ-9PLC": { type: "percent", value: 15, active: true, batch: "BV" },
+  "BV-RNFT-6W8A": { type: "percent", value: 15, active: true, batch: "BV" },
+  "BV-KD4M-XQPZ": { type: "percent", value: 15, active: true, batch: "BV" },
+  "BV-8TNH-3FJY": { type: "percent", value: 15, active: true, batch: "BV" },
 
   // ── Referidos 10% — genera más con: generateCodes("RF",10,10,"percent") ──
   "RF-7MBW-4KXQ": { type: "percent", value: 10, active: true, batch: "RF" },
@@ -115,7 +112,6 @@ const BATCH_LABELS = {
   BV: { es: "15% descuento — primera compra", en: "15% off — first purchase" },
   RF: { es: "10% descuento — cliente referido", en: "10% off — referred customer" },
   M5: { es: "$5 de descuento", en: "$5 off" },
-  TEST: { es: "99% descuento — PRUEBA", en: "99% off — test" },
 };
 
 /* ─── Fingerprint del dispositivo ─────────────────────────────────────────
@@ -1294,7 +1290,15 @@ footer p{font-size:12px;color:var(--fg3)}
       {paymentDone && (
         <div className="ps-overlay" onClick={() => { setPaymentDone(false); setDownloadLinks({}); }}>
           <div className="ps-modal" onClick={e => e.stopPropagation()}>
-            <div className="ps-icon">✅</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16}}>
+              <img src="/logo.png" alt="Medu 3D" style={{height:48,marginRight:8}} />
+              <span style={{fontFamily:"Montserrat",fontWeight:800,fontSize:26}}>
+                <span style={{color:"#0b3c73"}}>Medu</span><span style={{color:"#d64830"}}>3D</span>
+              </span>
+            </div>
+            <div style={{width:52,height:52,background:"#0891b2",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
             <h3>{lang === "es" ? "¡Pago exitoso!" : "Payment successful!"}</h3>
             <p>{lang === "es"
               ? "Gracias por tu compra. También recibirás un correo de confirmación con los links."
