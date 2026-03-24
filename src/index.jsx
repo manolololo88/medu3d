@@ -6,7 +6,7 @@ import * as THREE from "three";
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // PayPal Live Client ID
-const PAYPAL_CLIENT_ID = "AcyAGi5rclShoGEj2WCXyrPvlKSXe4M5ISKYKnXVuYhKkHFerBmPu6iO5yfvGAkpQ4lEh2Lr3fjMh974";
+const PAYPAL_CLIENT_ID = "AfSYYHgXDkLFc5SVqwgX96FLwl7W3MUfGN6CsBDaDeVEI4eh5jh15fNuw3ZZX55_fpv775T9dgglL6mI";
 
 // Formspree endpoint — crea cuenta en formspree.io y reemplaza con tu ID
 // Ejemplo: "https://formspree.io/f/xpzgkwer"
@@ -88,7 +88,9 @@ window.generateCodes = (prefix, qty, value, type) => {
 };
 
 const SINGLE_USE_CODES = {
-  // ── Bienvenida 15% (primera compra) — genera más con: generateCodes("BV",10,15,"percent") ──
+  // ── TEST — 99% off para pruebas internas (eliminar antes de producción) ──
+  "TEST-9999-9999": { type: "percent", value: 99, active: true, batch: "TEST" },
+  "TEST-GKCL-MLM5": { type: "percent", value: 99, active: true, batch: "TEST" },
   "BV-XMKR-7T4N": { type: "percent", value: 15, active: true, batch: "BV" },
   "BV-2HJQ-9PLC": { type: "percent", value: 15, active: true, batch: "BV" },
   "BV-RNFT-6W8A": { type: "percent", value: 15, active: true, batch: "BV" },
@@ -109,6 +111,7 @@ const SINGLE_USE_CODES = {
 };
 
 const BATCH_LABELS = {
+  TEST: { es: "99% descuento — prueba interna", en: "99% off — internal test" },
   BV: { es: "15% descuento — primera compra", en: "15% off — first purchase" },
   RF: { es: "10% descuento — cliente referido", en: "10% off — referred customer" },
   M5: { es: "$5 de descuento", en: "$5 off" },
