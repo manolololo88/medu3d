@@ -6,7 +6,7 @@ import * as THREE from "three";
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // PayPal Live Client ID
-const PAYPAL_CLIENT_ID = "EHp3X9h9W6L581acJWCLj7F8tgqxSCiHqZHoiOC2n5G3UlKjmp5WgxkHzMZ-6kw4s-QVrUIde4Aj02lb";
+const PAYPAL_CLIENT_ID = "AcyAGi5rclShoGEj2WCXyrPvlKSXe4M5ISKYKnXVuYhKkHFerBmPu6iO5yfvGAkpQ4lEh2Lr3fjMh974";
 
 // Formspree endpoint — crea cuenta en formspree.io y reemplaza con tu ID
 // Ejemplo: "https://formspree.io/f/xpzgkwer"
