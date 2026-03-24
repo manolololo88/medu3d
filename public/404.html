@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Página no encontrada — Medu 3D</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <meta name="theme-color" content="#0b3c73" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #f6f7fa;
+      color: #15172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 48px;
+      text-decoration: none;
+    }
+    .logo .m { color: #0b3c73; }
+    .logo .d { color: #d64830; }
+    .code {
+      font-size: clamp(80px, 20vw, 140px);
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #0b3c73, #0891b2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #555770;
+      font-size: 15px;
+      max-width: 380px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+    .btns {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-primary {
+      padding: 13px 28px;
+      background: #0891b2;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .2s, transform .2s;
+    }
+    .btn-primary:hover { background: #06b6d4; transform: translateY(-2px); }
+    .btn-secondary {
+      padding: 13px 28px;
+      background: transparent;
+      color: #0b3c73;
+      border: 1.5px solid rgba(11,60,115,0.2);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-secondary:hover { background: rgba(11,60,115,0.05); transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <a href="/" class="logo"><span class="m">Medu</span><span class="d">3D</span></a>
+  <div class="code">404</div>
+  <h1>Página no encontrada</h1>
+  <p>La página que buscas no existe o fue movida. Vuelve al inicio o explora nuestro catálogo.</p>
+  <div class="btns">
+    <a href="/" class="btn-primary">← Volver al inicio</a>
+    <a href="/#catalog" class="btn-secondary">Ver catálogo</a>
+  </div>
+</body>
+</html>

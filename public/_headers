@@ -1,0 +1,19 @@
+/*
+  # Seguridad general
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+  # Content Security Policy
+  # Permite: tu dominio, PayPal SDK, EmailJS, Google Fonts, Google Analytics, ipify (fingerprint)
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.sandbox.paypal.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://www.paypal.com https://api-m.paypal.com https://api.emailjs.com https://api.ipify.org https://www.google-analytics.com https://formspree.io; frame-src https://www.paypal.com https://www.sandbox.paypal.com; object-src 'none'; base-uri 'self';
+
+  # Cache para assets estáticos
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+  # Sin cache para HTML (siempre fresco)
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
