@@ -13,31 +13,189 @@ const PAYPAL_CLIENT_ID = "AfSYYHgXDkLFc5SVqwgX96FLwl7W3MUfGN6CsBDaDeVEI4eh5jh15f
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeerrvre";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CÓDIGOS DE DESCUENTO
+   EMAILJS — Confirmación de compra
    ─────────────────────────────────────────────────────────────────────────
-   type: "percent" → descuento porcentual  (ej. 15 = 15% off)
-   type: "fixed"   → descuento monto fijo  (ej. 5 = $5 off)
-   ─────────────────────────────────────────────────────────────────────────
-   Para agregar un código nuevo: copia un bloque { code:... } y pégalo.
-   Para desactivar uno: cambia active a false (no lo borres).
+   Service:  service_gmail  (Gmail conectado en EmailJS)
+   Template: order_confirmation  → pega el HTML del archivo email_template.html
+   Variables que el código envía al template:
+     {{email}}        → correo del comprador (destinatario)
+     {{to_name}}      → nombre del comprador
+     {{order_id}}     → número de pedido PayPal
+     {{order_date}}   → fecha de compra formateada
+     {{orders}}       → array JSON de items  [{ name, price, units }]
+     {{cost.total}}   → total cobrado
+     {{cost.shipping}}→ siempre "0.00" (descarga digital)
+     {{cost.tax}}     → siempre "0.00"
+     {{discount_line}}→ línea de descuento o cadena vacía
    ═══════════════════════════════════════════════════════════════════════════ */
-const DISCOUNT_CODES = {
-  "BIENVENIDO15": { type: "percent", value: 15, active: true,
-    label: { es: "15% de descuento — primera compra", en: "15% off — first purchase" } },
-  "REFERIDO10":   { type: "percent", value: 10, active: true,
-    label: { es: "10% de descuento — cliente referido",  en: "10% off — referred customer" } },
-  "MEDU5":        { type: "fixed",   value: 5,  active: true,
-    label: { es: "$5 de descuento",                      en: "$5 off" } },
+const EMAILJS_SERVICE_ID  = "service_gmail";
+const EMAILJS_TEMPLATE_ID = "order_confirmation";  // ← el nombre que le diste al template
+const EMAILJS_PUBLIC_KEY  = "XtMo9JT1OK78Yl6I_";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLOUDFLARE WORKER — Links de descarga firmados
+   Una vez desplegado el Worker, reemplaza la URL de abajo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const DOWNLOAD_WORKER_URL = "https://medu3d-downloads.manuelczelaya.workers.dev";
+
+async function sendConfirmationEmail(params) {
+  if (!window.emailjs) {
+    await new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+    window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  }
+  return window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CÓDIGOS DE DESCUENTO — USO ÚNICO
+   ─────────────────────────────────────────────────────────────────────────
+   Cada código solo funciona UNA VEZ por dispositivo (fingerprint + IP).
+   Una vez usado, queda bloqueado en ese dispositivo para siempre.
+
+   type:  "percent" → porcentaje  (ej. value:15 = 15% off)
+          "fixed"   → monto fijo  (ej. value:5  = $5 off)
+   batch: grupo al que pertenece (para generar lotes)
+
+   ── CÓMO GENERAR CÓDIGOS NUEVOS ──────────────────────────────────────────
+   Abre la consola del navegador (F12) y corre:
+     generateCodes("BV", 10, 15, "percent")   → 10 códigos BIENVENIDO 15%
+     generateCodes("RF", 5,  10, "percent")   → 5 códigos REFERIDO 10%
+     generateCodes("M5", 20,  5, "fixed")     → 20 códigos $5 off
+   Copia los códigos generados y pégalos en SINGLE_USE_CODES abajo.
+   ─────────────────────────────────────────────────────────────────────────
+   IMPORTANTE: Cada código aquí es único. Al darlo a un cliente,
+   ese código deja de funcionar después de su primera compra.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// Función helper para generar lotes de códigos (úsala en consola del navegador)
+window.generateCodes = (prefix, qty, value, type) => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const codes = {};
+  for (let i = 0; i < qty; i++) {
+    let id = "";
+    for (let j = 0; j < 8; j++) id += chars[Math.floor(Math.random() * chars.length)];
+    const code = `${prefix}-${id.slice(0,4)}-${id.slice(4)}`;
+    codes[code] = { type, value, active: true, batch: prefix };
+  }
+  console.log("── Códigos generados ──");
+  Object.entries(codes).forEach(([k,v]) => console.log(`  "${k}": ${JSON.stringify(v)},`));
+  return codes;
 };
 
-function applyDiscount(subtotal, code) {
-  if (!code) return { discount: 0, total: subtotal };
-  const c = DISCOUNT_CODES[code.toUpperCase()];
-  if (!c || !c.active) return null; // código inválido
-  const discount = c.type === "percent"
-    ? parseFloat((subtotal * c.value / 100).toFixed(2))
-    : Math.min(c.value, subtotal);
-  return { discount, total: parseFloat((subtotal - discount).toFixed(2)), label: c.label };
+const SINGLE_USE_CODES = {
+  // ── PRUEBA 99% — genera más con: generateCodes("BV",10,99,"percent") ──
+  "TEST-9999-9999": { type: "percent", value: 99, active: true, batch: "TEST" },
+
+  // ── Bienvenida 15% (primera compra) — genera más con: generateCodes("BV",10,30,"percent") ──
+  "BV-XMKR-7T4N": { type: "percent", value: 30, active: true, batch: "BV" },
+  "BV-2HJQ-9PLC": { type: "percent", value: 30, active: true, batch: "BV" },
+  "BV-RNFT-6W8A": { type: "percent", value: 30, active: true, batch: "BV" },
+  "BV-KD4M-XQPZ": { type: "percent", value: 30, active: true, batch: "BV" },
+  "BV-8TNH-3FJY": { type: "percent", value: 30, active: true, batch: "BV" },
+
+  // ── Referidos 10% — genera más con: generateCodes("RF",10,10,"percent") ──
+  "RF-7MBW-4KXQ": { type: "percent", value: 10, active: true, batch: "RF" },
+  "RF-CNTP-8RZJ": { type: "percent", value: 10, active: true, batch: "RF" },
+  "RF-HQKA-2NLD": { type: "percent", value: 10, active: true, batch: "RF" },
+  "RF-X6FP-WBTM": { type: "percent", value: 10, active: true, batch: "RF" },
+  "RF-9JYN-HCTR": { type: "percent", value: 10, active: true, batch: "RF" },
+
+  // ── $5 fijo — genera más con: generateCodes("M5",10,5,"fixed") ──
+  "M5-PLFB-7WNK": { type: "fixed",   value: 5,  active: true, batch: "M5" },
+  "M5-3XQT-RDJH": { type: "fixed",   value: 5,  active: true, batch: "M5" },
+  "M5-YNKC-8ABZ": { type: "fixed",   value: 5,  active: true, batch: "M5" },
+};
+
+const BATCH_LABELS = {
+  BV: { es: "15% descuento — primera compra", en: "15% off — first purchase" },
+  RF: { es: "10% descuento — cliente referido", en: "10% off — referred customer" },
+  M5: { es: "$5 de descuento", en: "$5 off" },
+  TEST: { es: "99% descuento — PRUEBA", en: "99% off — test" },
+};
+
+/* ─── Fingerprint del dispositivo ─────────────────────────────────────────
+   Combina: timezone + idioma + resolución + plataforma + user agent
+   Genera un hash de 8 caracteres único por dispositivo.
+   No es 100% infalible (nada lo es sin backend) pero hace el abuso
+   significativamente más difícil que solo localStorage.
+   ───────────────────────────────────────────────────────────────────────── */
+async function getDeviceFingerprint() {
+  const raw = [
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    navigator.language,
+    `${screen.width}x${screen.height}`,
+    navigator.platform,
+    navigator.userAgent.slice(0, 80),
+    screen.colorDepth,
+  ].join("|");
+
+  // Intenta usar IP pública para reforzar el fingerprint
+  let ip = "";
+  try {
+    const r = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(2000) });
+    const d = await r.json();
+    ip = d.ip || "";
+  } catch {}
+
+  const str = raw + "|" + ip;
+  // Hash simple (djb2) — suficiente para este propósito
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h) ^ str.charCodeAt(i);
+  return (h >>> 0).toString(36).toUpperCase().padStart(8, "0");
+}
+
+const LS_KEY = "medu3d_used_codes"; // clave en localStorage
+
+function getUsedCodes() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch { return {}; }
+}
+
+function markCodeUsed(code, fingerprint) {
+  const used = getUsedCodes();
+  used[code.toUpperCase()] = { fp: fingerprint, ts: Date.now() };
+  try { localStorage.setItem(LS_KEY, JSON.stringify(used)); } catch {}
+}
+
+function isCodeUsedLocally(code) {
+  return !!getUsedCodes()[code.toUpperCase()];
+}
+
+async function validateCode(code) {
+  const key = code.toUpperCase().trim();
+  const def  = SINGLE_USE_CODES[key];
+  if (!def || !def.active) return { valid: false, reason: "invalid" };
+
+  // Verificar si ya fue usado en este dispositivo (localStorage)
+  if (isCodeUsedLocally(key)) return { valid: false, reason: "used" };
+
+  // Verificar fingerprint
+  const fp = await getDeviceFingerprint();
+  const used = getUsedCodes();
+  const usedByFp = Object.values(used).some(u => u.fp === fp);
+  if (usedByFp) return { valid: false, reason: "device" };
+
+  const label = BATCH_LABELS[def.batch] || { es: `${def.value}${def.type==="percent"?"%":"$"} de descuento`, en: `${def.value}${def.type==="percent"?"%":"$"} off` };
+  return { valid: true, code: key, def, label, fingerprint: fp };
+}
+
+function applyDiscount(subtotal, validationResult) {
+  if (!validationResult?.valid) return null;
+  const { def, label } = validationResult;
+  const discount = def.type === "percent"
+    ? parseFloat((subtotal * def.value / 100).toFixed(2))
+    : Math.min(def.value, subtotal);
+  return {
+    discount,
+    total: parseFloat((subtotal - discount).toFixed(2)),
+    label,
+    code: validationResult.code,
+    fingerprint: validationResult.fingerprint,
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -555,19 +713,22 @@ export default function App() {
   const [page, setPage] = useState(() => {
     // Lee la página inicial desde el hash de la URL si existe
     const h = window.location.hash.replace("#", "");
-    return ["home","catalog","quote","about","contact","product"].includes(h) ? h : "home";
+    return ["home","catalog","quote","about","contact","product","privacy","terms"].includes(h) ? h : "home";
   });
   const [selProd, setSelProd] = useState(null);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(null); // { discount, total, label } | null
+  const [discountValidating, setDiscountValidating] = useState(false);
+  const [discountError, setDiscountError] = useState("");
   const [hi, setHi] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [phase, setPhase] = useState("idle"); // idle | out | in
   const [nextHi, setNextHi] = useState(0);
   const [dir, setDir] = useState(1); // 1=forward -1=backward
   const [paymentDone, setPaymentDone] = useState(false);
+  const [downloadLinks, setDownloadLinks] = useState({});
   const busy = useRef(false);
   const skipHistory = useRef(false); // evita doble push cuando popstate dispara
 
@@ -647,14 +808,16 @@ export default function App() {
     const item = makeCartItem(p, type);
     if (!cart.find(c => c.cartId === item.cartId)) {
       setCart([...cart, item]);
-      setAppliedDiscount(null); // reset descuento al cambiar carrito
+      setAppliedDiscount(null);
       setDiscountCode("");
+      setDiscountError("");
     }
   };
   const rmCart = cartId => {
     setCart(cart.filter(c => c.cartId !== cartId));
     setAppliedDiscount(null);
     setDiscountCode("");
+    setDiscountError("");
   };
   const subtotal = parseFloat(cart.reduce((s, p) => s + p.price, 0).toFixed(2));
   const total = appliedDiscount ? appliedDiscount.total.toFixed(2) : subtotal.toFixed(2);
@@ -697,10 +860,106 @@ export default function App() {
   const textState = phase === "out" ? "exit" : (phase === "in" ? "entering" : "idle");
   const modelState = phase === "out" ? "exit" : (phase === "in" ? "entering" : "idle");
 
-  const handlePaymentSuccess = (order) => {
+  const handleApplyCode = async () => {
+    const code = discountCode.trim();
+    if (!code) return;
+    setDiscountValidating(true);
+    setDiscountError("");
+    const result = await validateCode(code);
+    setDiscountValidating(false);
+    if (!result.valid) {
+      const msgs = {
+        invalid: { es: "Código inválido o no existe", en: "Invalid or unknown code" },
+        used:    { es: "Este código ya fue utilizado en este dispositivo", en: "This code was already used on this device" },
+        device:  { es: "Ya se usó un código de descuento en este dispositivo", en: "A discount code was already used on this device" },
+      };
+      setDiscountError((msgs[result.reason] || msgs.invalid)[lang]);
+    } else {
+      setAppliedDiscount(applyDiscount(subtotal, result));
+    }
+  };
+
+  const handlePaymentSuccess = async (order) => {
+    // 1. Quemar código de descuento si se usó
+    if (appliedDiscount?.code && appliedDiscount?.fingerprint) {
+      markCodeUsed(appliedDiscount.code, appliedDiscount.fingerprint);
+    }
+
+    const buyerEmail = order?.payer?.email_address || "";
+    const buyerName  = `${order?.payer?.name?.given_name || ""} ${order?.payer?.name?.surname || ""}`.trim() || "Cliente";
+    const orderId    = order?.id || `MEDU-${Date.now()}`;
+    const orderDate  = new Date().toLocaleDateString(lang === "es" ? "es-CR" : "en-US", {
+      year: "numeric", month: "long", day: "numeric"
+    });
+
+    // 2. Solicitar links de descarga al Worker
+    let downloadLinks = {};
+    let downloadSection = "";
+    try {
+      const productIds = cart.map(p => p.id);
+      const res = await fetch(`${DOWNLOAD_WORKER_URL}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, productIds, paypalToken: orderId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        downloadLinks = data.links || {};
+        // Construir sección de links para el email
+        downloadSection = Object.entries(downloadLinks).map(([pid, files]) => {
+          const prod = cart.find(p => p.id === pid);
+          const name = prod?.name[lang] || pid;
+          const fileLinks = files.map(f =>
+            `${f.filename}: ${f.url}`
+          ).join("\n");
+          return `${name}:\n${fileLinks}`;
+        }).join("\n\n");
+      }
+    } catch(e) {
+      console.warn("Worker unreachable, skipping download links:", e);
+    }
+
+    // 3. Enviar email de confirmación con links incluidos
+    const ordersArray = cart.map(p => ({
+      name:      p.name[lang] || p.name.es,
+      price:     p.price.toFixed(2),
+      units:     "1",
+      image_url: "https://medu3d.com/logo.png",
+    }));
+
+    const discountLine = appliedDiscount
+      ? (lang === "es"
+          ? `Descuento aplicado: -$${appliedDiscount.discount.toFixed(2)}`
+          : `Discount applied: -$${appliedDiscount.discount.toFixed(2)}`)
+      : "";
+
+    try {
+      await sendConfirmationEmail({
+        email:           buyerEmail,
+        to_name:         buyerName,
+        order_id:        orderId,
+        order_date:      orderDate,
+        orders:          JSON.stringify(ordersArray),
+        "cost.total":    total,
+        "cost.shipping": "0.00",
+        "cost.tax":      "0.00",
+        discount_line:   discountLine,
+        download_links:  downloadSection || (lang === "es"
+          ? "Te enviaremos los links en las próximas horas."
+          : "We'll send you the links within a few hours."),
+      });
+    } catch(e) {
+      console.warn("Email confirmation failed:", e);
+    }
+
+    // 4. Guardar links en estado para mostrarlos en pantalla
+    setDownloadLinks(downloadLinks);
     setPaymentDone(true);
     setCart([]);
     setCartOpen(false);
+    setAppliedDiscount(null);
+    setDiscountCode("");
+    setDiscountError("");
   };
 
   return (
@@ -995,12 +1254,19 @@ nav{position:fixed;top:0;left:0;right:0;padding:0 48px;height:68px;display:flex;
 .cs-savings{display:flex;justify-content:space-between;font-size:13px;color:var(--ac);font-weight:600;margin-bottom:6px}
 
 /* PAYMENT SUCCESS MODAL */
-.ps-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
-.ps-modal{background:var(--bg2);border-radius:20px;padding:40px 36px;max-width:400px;width:100%;text-align:center}
+.ps-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.ps-modal{background:var(--bg2);border-radius:20px;padding:36px 32px;max-width:480px;width:100%;text-align:center}
 .ps-icon{font-size:52px;margin-bottom:16px}
 .ps-modal h3{font-size:22px;margin-bottom:8px}
-.ps-modal p{color:var(--fg2);font-size:14px;line-height:1.6;margin-bottom:24px}
+.ps-modal p{color:var(--fg2);font-size:14px;line-height:1.6;margin-bottom:16px}
 .ps-btn{padding:12px 28px;background:var(--ac);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Montserrat'}
+.ps-downloads{margin:16px 0;text-align:left}
+.ps-dl-title{font-size:12px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;text-align:center}
+.ps-dl-item{margin-bottom:10px;background:var(--bg3);border-radius:10px;padding:12px 14px}
+.ps-dl-name{font-size:13px;font-weight:600;color:var(--fg);margin-bottom:6px}
+.ps-dl-btns{display:flex;gap:6px;flex-wrap:wrap}
+.ps-dl-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--ac);color:#fff;border-radius:8px;text-decoration:none;font-size:11px;font-weight:700;font-family:'Montserrat';transition:background .2s}.ps-dl-btn:hover{background:var(--ac2)}
+.ps-dl-note{font-size:11px;color:var(--fg3);margin-top:10px;text-align:center;line-height:1.5}
 
 footer{border-top:1px solid rgba(0,0,0,0.05);padding:36px 48px;text-align:center;margin-top:40px}
 .fl{font-family:'Montserrat',sans-serif;font-size:19px;margin-bottom:4px}.fl .d{color:var(--ac);font-style:italic}
@@ -1026,14 +1292,51 @@ footer p{font-size:12px;color:var(--fg3)}
 
       {/* PAYMENT SUCCESS MODAL */}
       {paymentDone && (
-        <div className="ps-overlay" onClick={() => setPaymentDone(false)}>
+        <div className="ps-overlay" onClick={() => { setPaymentDone(false); setDownloadLinks({}); }}>
           <div className="ps-modal" onClick={e => e.stopPropagation()}>
             <div className="ps-icon">✅</div>
             <h3>{lang === "es" ? "¡Pago exitoso!" : "Payment successful!"}</h3>
             <p>{lang === "es"
-              ? "Gracias por tu compra. Te enviaremos los archivos a tu correo en las próximas horas."
-              : "Thank you for your purchase. We'll send the files to your email within a few hours."}</p>
-            <button className="ps-btn" onClick={() => setPaymentDone(false)}>
+              ? "Gracias por tu compra. También recibirás un correo de confirmación con los links."
+              : "Thank you for your purchase. You'll also receive a confirmation email with the links."}</p>
+
+            {/* Download links section */}
+            {Object.keys(downloadLinks).length > 0 ? (
+              <div className="ps-downloads">
+                <div className="ps-dl-title">
+                  {lang === "es" ? "📥 Descarga tus archivos" : "📥 Download your files"}
+                </div>
+                {Object.entries(downloadLinks).map(([pid, files]) => {
+                  const prod = P.find(p => p.id === pid);
+                  return (
+                    <div className="ps-dl-item" key={pid}>
+                      <div className="ps-dl-name">{prod?.name[lang] || pid}</div>
+                      <div className="ps-dl-btns">
+                        {files.map(f => (
+                          <a key={f.filename} href={f.url} className="ps-dl-btn" download={f.filename}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            {lang === "es" ? "Descargar archivos" : "Download files"} ({f.filename.split(".").pop().toUpperCase()})
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                <p className="ps-dl-note">
+                  {lang === "es"
+                    ? "⏱ Los links son válidos por 2 horas. También los recibirás en tu correo."
+                    : "⏱ Links are valid for 2 hours. You'll also receive them by email."}
+                </p>
+              </div>
+            ) : (
+              <p style={{fontSize:12,color:"var(--fg3)",marginBottom:20}}>
+                {lang === "es"
+                  ? "Los links de descarga llegarán a tu correo en breve."
+                  : "Download links will arrive to your email shortly."}
+              </p>
+            )}
+
+            <button className="ps-btn" onClick={() => { setPaymentDone(false); setDownloadLinks({}); }}>
               {lang === "es" ? "Cerrar" : "Close"}
             </button>
           </div>
@@ -1109,35 +1412,32 @@ footer p{font-size:12px;color:var(--fg3)}
                     <input
                       placeholder={lang === "es" ? "Código de descuento" : "Discount code"}
                       value={discountCode}
-                      onChange={e => setDiscountCode(e.target.value.toUpperCase())}
-                      onKeyDown={e => {
-                        if (e.key === "Enter") {
-                          const result = applyDiscount(subtotal, discountCode);
-                          if (result) setAppliedDiscount(result);
-                        }
-                      }}
+                      onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountError(""); }}
+                      onKeyDown={e => { if (e.key === "Enter") handleApplyCode(); }}
+                      disabled={discountValidating}
                     />
-                    <button className="cs-discount-btn" onClick={() => {
-                      const result = applyDiscount(subtotal, discountCode);
-                      if (result) setAppliedDiscount(result);
-                    }}>
-                      {lang === "es" ? "Aplicar" : "Apply"}
+                    <button
+                      className="cs-discount-btn"
+                      onClick={handleApplyCode}
+                      disabled={discountValidating || !discountCode.trim()}
+                    >
+                      {discountValidating
+                        ? (lang === "es" ? "..." : "...")
+                        : (lang === "es" ? "Aplicar" : "Apply")}
                     </button>
                   </div>
-                  {discountCode && applyDiscount(subtotal, discountCode) === null && (
-                    <p className="cs-discount-err">
-                      {lang === "es" ? "Código inválido o expirado" : "Invalid or expired code"}
-                    </p>
+                  {discountError && (
+                    <p className="cs-discount-err">{discountError}</p>
                   )}
                 </>
               ) : (
                 <div className="cs-discount-applied">
                   <span>
-                    🏷 {appliedDiscount.label?.[lang] || discountCode}
+                    🏷 {appliedDiscount.label?.[lang]}
                     {" · "}{lang === "es" ? "ahorras" : "you save"} ${appliedDiscount.discount.toFixed(2)}
                   </span>
                   <button className="cs-discount-remove" onClick={() => {
-                    setAppliedDiscount(null); setDiscountCode("");
+                    setAppliedDiscount(null); setDiscountCode(""); setDiscountError("");
                   }}>{lang === "es" ? "Quitar" : "Remove"}</button>
                 </div>
               )}
@@ -1266,6 +1566,10 @@ footer p{font-size:12px;color:var(--fg3)}
 
       {/* CONTACT */}
       {page === "contact" && <ContactForm t={t} lang={lang} />}
+
+      {/* LEGAL */}
+      {page === "privacy" && <LegalPage type="privacy" lang={lang} goPage={goPage} />}
+      {page === "terms"   && <LegalPage type="terms"   lang={lang} goPage={goPage} />}
       </div>
 
       {/* Floating WhatsApp */}
@@ -1277,6 +1581,15 @@ footer p{font-size:12px;color:var(--fg3)}
         <div className="fl"><img src="/logo.png" alt="" style={{height:28,marginRight:6,verticalAlign:"middle"}} />Medu <span className="d">3D</span></div>
         <p>{t.footer.tag}</p>
         <p style={{marginTop:4}}>© {new Date().getFullYear()} Medu 3D · {t.footer.rights}</p>
+        <p style={{marginTop:12,display:"flex",gap:16,justifyContent:"center",flexWrap:"wrap"}}>
+          <button onClick={() => goPage("privacy")} style={{background:"none",border:"none",color:"var(--fg3)",fontSize:12,cursor:"pointer",fontFamily:"Montserrat",textDecoration:"underline"}}>
+            {lang === "es" ? "Política de Privacidad" : "Privacy Policy"}
+          </button>
+          <button onClick={() => goPage("terms")} style={{background:"none",border:"none",color:"var(--fg3)",fontSize:12,cursor:"pointer",fontFamily:"Montserrat",textDecoration:"underline"}}>
+            {lang === "es" ? "Términos y Condiciones" : "Terms & Conditions"}
+          </button>
+          <a href="mailto:contacto@medu3d.com" style={{color:"var(--fg3)",fontSize:12,textDecoration:"underline"}}>contacto@medu3d.com</a>
+        </p>
       </footer>
     </>
   );
@@ -1710,6 +2023,145 @@ function ContactForm({ t, lang }) {
             </button>
           </>}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Legal Pages — Política de Privacidad & Términos y Condiciones
+   ═══════════════════════════════════════════════════════════════════════════ */
+function LegalPage({ type, lang, goPage }) {
+  const es = lang === "es";
+  const isPrivacy = type === "privacy";
+
+  const sections = isPrivacy ? [
+    {
+      title: es ? "1. Responsable del tratamiento" : "1. Data Controller",
+      body: es
+        ? "Medu 3D, operado por Manuel Castillo (contacto@medu3d.com), es responsable del tratamiento de los datos personales recopilados a través de medu3d.com."
+        : "Medu 3D, operated by Manuel Castillo (contacto@medu3d.com), is the data controller for personal data collected through medu3d.com.",
+    },
+    {
+      title: es ? "2. Datos que recopilamos" : "2. Data We Collect",
+      body: es
+        ? "Al realizar una compra recopilamos: nombre, correo electrónico y datos de pago procesados directamente por PayPal (no almacenamos datos de tarjeta). Al contactarnos: nombre y correo electrónico. Datos de navegación: dirección IP, tipo de navegador y páginas visitadas, mediante Google Analytics."
+        : "When you make a purchase we collect: name, email address and payment data processed directly by PayPal (we do not store card data). When you contact us: name and email address. Browsing data: IP address, browser type and pages visited, via Google Analytics.",
+    },
+    {
+      title: es ? "3. Finalidad del tratamiento" : "3. Purpose of Processing",
+      body: es
+        ? "Usamos tus datos para: procesar y confirmar tu compra, enviarte los archivos adquiridos, responder consultas de soporte, y mejorar la experiencia del sitio mediante análisis de uso anónimo."
+        : "We use your data to: process and confirm your purchase, send you purchased files, answer support inquiries, and improve site experience through anonymous usage analytics.",
+    },
+    {
+      title: es ? "4. Compartición de datos" : "4. Data Sharing",
+      body: es
+        ? "No vendemos ni compartimos tus datos con terceros, salvo los necesarios para procesar el pago (PayPal) y analítica de uso (Google Analytics). Ambos servicios tienen sus propias políticas de privacidad."
+        : "We do not sell or share your data with third parties, except those necessary to process payment (PayPal) and usage analytics (Google Analytics). Both services have their own privacy policies.",
+    },
+    {
+      title: es ? "5. Cookies" : "5. Cookies",
+      body: es
+        ? "Usamos cookies técnicas necesarias para el funcionamiento del sitio y cookies de analítica de Google Analytics, que puedes rechazar desactivando JavaScript o usando extensiones de bloqueo."
+        : "We use technical cookies necessary for site operation and Google Analytics cookies, which you can reject by disabling JavaScript or using blocking extensions.",
+    },
+    {
+      title: es ? "6. Tus derechos" : "6. Your Rights",
+      body: es
+        ? "Tienes derecho a acceder, rectificar o eliminar tus datos personales. Para ejercerlos, escríbenos a contacto@medu3d.com."
+        : "You have the right to access, rectify or delete your personal data. To exercise them, email us at contacto@medu3d.com.",
+    },
+    {
+      title: es ? "7. Cambios a esta política" : "7. Changes to This Policy",
+      body: es
+        ? "Podemos actualizar esta política ocasionalmente. La versión vigente siempre estará disponible en esta página con su fecha de actualización."
+        : "We may occasionally update this policy. The current version will always be available on this page with its update date.",
+    },
+  ] : [
+    {
+      title: es ? "1. Aceptación de los términos" : "1. Acceptance of Terms",
+      body: es
+        ? "Al acceder y usar medu3d.com, aceptas estar sujeto a estos Términos y Condiciones. Si no estás de acuerdo, por favor no utilices el sitio."
+        : "By accessing and using medu3d.com, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use the site.",
+    },
+    {
+      title: es ? "2. Productos digitales" : "2. Digital Products",
+      body: es
+        ? "Los modelos anatómicos 3D son archivos digitales en formato STL y/u OBJ. Al completar tu compra recibirás acceso inmediato a los archivos. Por la naturaleza digital del producto, no se aceptan devoluciones una vez descargado el archivo."
+        : "The 3D anatomical models are digital files in STL and/or OBJ format. Upon completing your purchase you will receive immediate access to the files. Due to the digital nature of the product, refunds are not accepted once the file has been downloaded.",
+    },
+    {
+      title: es ? "3. Licencia de uso" : "3. License of Use",
+      body: es
+        ? "Al adquirir un modelo, obtienes una licencia personal, no exclusiva e intransferible para uso educativo, de investigación o impresión privada. No se permite la reventa, redistribución ni el uso comercial sin autorización escrita de Medu 3D."
+        : "By purchasing a model, you obtain a personal, non-exclusive, non-transferable license for educational, research or private printing use. Resale, redistribution or commercial use without written authorization from Medu 3D is not permitted.",
+    },
+    {
+      title: es ? "4. Precisión de los modelos" : "4. Model Accuracy",
+      body: es
+        ? "Los modelos son generados desde imágenes médicas reales con fines educativos. No están destinados a diagnóstico clínico, planificación quirúrgica real ni ningún uso médico directo sin supervisión profesional."
+        : "The models are generated from real medical images for educational purposes. They are not intended for clinical diagnosis, real surgical planning, or any direct medical use without professional supervision.",
+    },
+    {
+      title: es ? "5. Pagos" : "5. Payments",
+      body: es
+        ? "Los pagos se procesan de forma segura a través de PayPal. Medu 3D no almacena datos de tarjetas de crédito. Todos los precios están en USD e incluyen los archivos indicados en cada producto."
+        : "Payments are processed securely through PayPal. Medu 3D does not store credit card data. All prices are in USD and include the files indicated in each product.",
+    },
+    {
+      title: es ? "6. Propiedad intelectual" : "6. Intellectual Property",
+      body: es
+        ? "Todos los modelos 3D, imágenes, textos y diseños de medu3d.com son propiedad de Medu 3D. Queda prohibida su reproducción total o parcial sin autorización expresa."
+        : "All 3D models, images, texts and designs on medu3d.com are the property of Medu 3D. Total or partial reproduction without express authorization is prohibited.",
+    },
+    {
+      title: es ? "7. Limitación de responsabilidad" : "7. Limitation of Liability",
+      body: es
+        ? "Medu 3D no se hace responsable por daños derivados del uso inadecuado de los modelos, incompatibilidad de software de terceros, o interrupciones del servicio fuera de nuestro control."
+        : "Medu 3D is not responsible for damages resulting from improper use of the models, incompatibility with third-party software, or service interruptions beyond our control.",
+    },
+    {
+      title: es ? "8. Legislación aplicable" : "8. Governing Law",
+      body: es
+        ? "Estos términos se rigen por la legislación vigente en Costa Rica. Cualquier disputa se someterá a los tribunales competentes de San José, Costa Rica."
+        : "These terms are governed by the laws in force in Costa Rica. Any dispute shall be submitted to the competent courts of San José, Costa Rica.",
+    },
+  ];
+
+  return (
+    <div style={{ maxWidth: 780, margin: "0 auto", padding: "100px 48px 60px" }}>
+      <button
+        onClick={() => goPage("home")}
+        style={{ display:"inline-flex",alignItems:"center",gap:8,background:"var(--bg2)",border:"1.5px solid rgba(0,0,0,0.08)",color:"var(--fg2)",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"Montserrat",marginBottom:32,padding:"10px 20px",borderRadius:10,transition:"all .2s" }}
+        onMouseOver={e=>{e.currentTarget.style.color="var(--ac)";e.currentTarget.style.borderColor="var(--ac)"}}
+        onMouseOut={e=>{e.currentTarget.style.color="var(--fg2)";e.currentTarget.style.borderColor="rgba(0,0,0,0.08)"}}
+      >← {es ? "Volver" : "Back"}</button>
+
+      <h1 style={{ fontSize:"clamp(24px,4vw,36px)", fontWeight:800, marginBottom:8 }}>
+        {isPrivacy
+          ? (es ? "Política de Privacidad" : "Privacy Policy")
+          : (es ? "Términos y Condiciones" : "Terms & Conditions")}
+      </h1>
+      <p style={{ color:"var(--fg3)", fontSize:13, marginBottom:40 }}>
+        {es ? "Última actualización: marzo 2026" : "Last updated: March 2026"}
+      </p>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:28 }}>
+        {sections.map((s, i) => (
+          <div key={i}>
+            <h2 style={{ fontSize:16, fontWeight:700, marginBottom:8, color:"var(--fg)" }}>{s.title}</h2>
+            <p style={{ fontSize:14, color:"var(--fg2)", lineHeight:1.75 }}>{s.body}</p>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop:48, padding:"20px 24px", background:"var(--bg3)", borderRadius:12 }}>
+        <p style={{ fontSize:13, color:"var(--fg2)" }}>
+          {es
+            ? <>¿Tienes preguntas? Escríbenos a <a href="mailto:contacto@medu3d.com" style={{color:"var(--ac)"}}>contacto@medu3d.com</a></>
+            : <>Questions? Email us at <a href="mailto:contacto@medu3d.com" style={{color:"var(--ac)"}}>contacto@medu3d.com</a></>}
+        </p>
       </div>
     </div>
   );
