@@ -918,34 +918,46 @@ export default function App() {
       console.warn("Worker unreachable, skipping download links:", e);
     }
 
-    // 3. Enviar email de confirmación con links incluidos
-    const ordersArray = cart.map(p => ({
-      name:      p.name[lang] || p.name.es,
-      price:     p.price.toFixed(2),
-      units:     "1",
-      image_url: "https://medu3d.com/logo.png",
-    }));
-
+    // 3. Enviar email de confirmación
     const discountLine = appliedDiscount
-      ? (lang === "es"
-          ? `Descuento aplicado: -$${appliedDiscount.discount.toFixed(2)}`
-          : `Discount applied: -$${appliedDiscount.discount.toFixed(2)}`)
+      ? `Descuento: -$${appliedDiscount.discount.toFixed(2)}`
       : "";
+
+    // Construir la tabla de productos como HTML para incluirla directamente
+    const itemsHtml = cart.map(p => `
+      <tr>
+        <td style="padding:12px 0;border-bottom:1px solid #f0f2f7;font-weight:700;color:#15172a;font-size:14px;">
+          ${p.name[lang] || p.name.es}
+          <div style="font-size:12px;color:#888;font-weight:400;margin-top:3px;">Formato: STL, OBJ</div>
+        </td>
+        <td style="padding:12px 0 12px 16px;border-bottom:1px solid #f0f2f7;white-space:nowrap;text-align:right;font-weight:700;color:#0b3c73;font-size:15px;">
+          $${p.price.toFixed(2)}
+        </td>
+      </tr>`).join("");
+
+    const downloadHtml = downloadSection
+      ? `<div style="margin-top:24px;background:#f0f8ff;border-left:4px solid #0891b2;border-radius:0 8px 8px 0;padding:16px 18px;">
+          <div style="font-weight:700;color:#0b3c73;margin-bottom:8px;font-size:14px;">Descarga tus archivos / Download your files</div>
+          <p style="font-size:12px;color:#555;margin:0 0 10px;">Los links son validos por 2 horas desde la compra.</p>
+          <div style="font-size:12px;color:#333;background:#fff;padding:12px;border-radius:6px;border:1px solid #e0e0e0;word-break:break-all;white-space:pre-line;">${downloadSection}</div>
+        </div>`
+      : `<div style="margin-top:24px;background:#f0f8ff;border-left:4px solid #0891b2;border-radius:0 8px 8px 0;padding:16px 18px;">
+          <div style="font-weight:700;color:#0b3c73;margin-bottom:6px;font-size:14px;">Descarga inmediata / Instant download</div>
+          <div style="font-size:13px;color:#555;">Si no recibes tus archivos en 30 minutos, respondenos este correo.</div>
+        </div>`;
 
     try {
       await sendConfirmationEmail({
-        email:           buyerEmail,
-        to_name:         buyerName,
-        from_name:       "Medu 3D",
-        reply_to:        "contacto@medu3d.com",
-        order_id:        orderId,
-        order_date:      orderDate,
-        orders:          JSON.stringify(ordersArray),
-        "cost.total":    total,
-        "cost.shipping": "0.00",
-        "cost.tax":      "0.00",
-        discount_line:   discountLine,
-        download_links:  downloadSection || "",
+        email:         buyerEmail,
+        to_name:       buyerName,
+        reply_to:      "contacto@medu3d.com",
+        order_id:      orderId,
+        order_date:    orderDate,
+        items_html:    itemsHtml,
+        subtotal:      `$${subtotal.toFixed(2)}`,
+        discount_line: discountLine,
+        total:         `$${total}`,
+        download_html: downloadHtml,
       });
     } catch(e) {
       console.warn("Email confirmation failed:", e);
