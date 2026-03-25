@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://medu3d.com/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
