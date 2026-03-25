@@ -878,10 +878,13 @@ export default function App() {
     }
   };
 
-  const handlePaymentSuccess = async (order) => {
+  const handlePaymentSuccess = async (order, itemsOverride = null, discountOverride = null) => {
+    const activeCart     = itemsOverride || cart;
+    const activeDiscount = discountOverride || appliedDiscount;
+
     // 1. Quemar código de descuento si se usó
-    if (appliedDiscount?.code && appliedDiscount?.fingerprint) {
-      markCodeUsed(appliedDiscount.code, appliedDiscount.fingerprint);
+    if (activeDiscount?.code && activeDiscount?.fingerprint) {
+      markCodeUsed(activeDiscount.code, activeDiscount.fingerprint);
     }
 
     const buyerEmail = order?.payer?.email_address || "";
@@ -895,7 +898,7 @@ export default function App() {
     let downloadLinks = {};
     let downloadSection = "";
     try {
-      const productIds = cart.map(p => p.id);
+      const productIds = activeCart.map(p => p.id);
       const res = await fetch(`${DOWNLOAD_WORKER_URL}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -918,50 +921,19 @@ export default function App() {
       console.warn("Worker unreachable, skipping download links:", e);
     }
 
-    // 3. Enviar email de confirmación
-    const discountLine = appliedDiscount
-      ? `Descuento: -$${appliedDiscount.discount.toFixed(2)}`
-      : "";
-
-    // Construir la tabla de productos como HTML para incluirla directamente
-    const itemsHtml = cart.map(p => `
-      <tr>
-        <td style="padding:12px 0;border-bottom:1px solid #f0f2f7;font-weight:700;color:#15172a;font-size:14px;">
-          ${p.name[lang] || p.name.es}
-          <div style="font-size:12px;color:#888;font-weight:400;margin-top:3px;">Formato: STL, OBJ</div>
-        </td>
-        <td style="padding:12px 0 12px 16px;border-bottom:1px solid #f0f2f7;white-space:nowrap;text-align:right;font-weight:700;color:#0b3c73;font-size:15px;">
-          $${p.price.toFixed(2)}
-        </td>
-      </tr>`).join("");
-
-    const downloadHtml = downloadSection
-      ? `<div style="margin-top:24px;background:#f0f8ff;border-left:4px solid #0891b2;border-radius:0 8px 8px 0;padding:16px 18px;">
-          <div style="font-weight:700;color:#0b3c73;margin-bottom:8px;font-size:14px;">Descarga tus archivos / Download your files</div>
-          <p style="font-size:12px;color:#555;margin:0 0 10px;">Los links son validos por 2 horas desde la compra.</p>
-          <div style="font-size:12px;color:#333;background:#fff;padding:12px;border-radius:6px;border:1px solid #e0e0e0;word-break:break-all;white-space:pre-line;">${downloadSection}</div>
-        </div>`
-      : `<div style="margin-top:24px;background:#f0f8ff;border-left:4px solid #0891b2;border-radius:0 8px 8px 0;padding:16px 18px;">
-          <div style="font-weight:700;color:#0b3c73;margin-bottom:6px;font-size:14px;">Descarga inmediata / Instant download</div>
-          <div style="font-size:13px;color:#555;">Si no recibes tus archivos en 30 minutos, respondenos este correo.</div>
-        </div>`;
-
+    // 3. Construir y enviar email completo como HTML (evita escaping de EmailJS)
+    const discountAmt  = activeDiscount ? activeDiscount.discount.toFixed(2) : null;
+    const activeSubtotal = parseFloat(activeCart.reduce((s,p) => s + p.price, 0).toFixed(2));
+    const activeTotal    = activeDiscount ? activeDiscount.total.toFixed(2) : activeSubtotal.toFixed(2);
+    const itemsRows = activeCart.map(p => `<tr><td style="padding:12px 0;border-bottom:1px solid #f0f2f7;"><div style="font-weight:700;color:#15172a;font-size:14px;">${p.name[lang]||p.name.es}</div><div style="font-size:12px;color:#888;margin-top:3px;">Formato: STL, OBJ</div></td><td style="padding:12px 0 12px 16px;border-bottom:1px solid #f0f2f7;text-align:right;font-weight:700;color:#0b3c73;font-size:15px;white-space:nowrap;">$${p.price.toFixed(2)}</td></tr>`).join("");
+    const discountRow = discountAmt ? `<tr><td></td><td colspan="2" style="padding:6px 0;text-align:right;color:#0891b2;font-size:13px;font-weight:700;">Descuento aplicado: -$${discountAmt}</td></tr>` : "";
+    const downloadBox = downloadSection
+      ? `<div style="margin-top:24px;background:#f0f8ff;border-left:4px solid #0891b2;border-radius:0 8px 8px 0;padding:16px 18px;"><div style="font-weight:700;color:#0b3c73;margin-bottom:8px;font-size:14px;">Descarga tus archivos</div><p style="font-size:12px;color:#555;margin:0 0 10px;">Los links son validos por 2 horas desde la compra.</p><div style="font-size:12px;background:#fff;padding:12px;border-radius:6px;border:1px solid #e0e0e0;word-break:break-all;white-space:pre-line;">${downloadSection}</div></div>`
+      : `<div style="margin-top:24px;background:#f0f8ff;border-left:4px solid #0891b2;border-radius:0 8px 8px 0;padding:16px 18px;"><div style="font-weight:700;color:#0b3c73;margin-bottom:6px;">Descarga inmediata</div><div style="font-size:13px;color:#555;">Si no recibes tus archivos en 30 minutos, respondenos a contacto@medu3d.com</div></div>`;
+    const messageHtml = `<div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;color:#333;padding:24px 8px;background:#f0f2f7;"><div style="max-width:600px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);"><div style="background:linear-gradient(135deg,#0b3c73 0%,#071e3d 100%);padding:28px 32px;"><table style="width:100%;border-collapse:collapse;"><tr><td style="vertical-align:middle;padding-right:20px;border-right:1px solid rgba(255,255,255,0.25);"><span style="font-size:26px;font-weight:900;"><span style="color:#fff;">Medu</span><span style="color:#d64830;">3D</span></span></td><td style="vertical-align:middle;padding-left:20px;"><div style="color:#fff;font-size:18px;font-weight:700;">Gracias por tu compra</div><div style="color:rgba(255,255,255,0.55);font-size:12px;margin-top:3px;">Thank you for your order</div></td></tr></table></div><div style="padding:28px 32px;"><p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#0b3c73;">Hola ${buyerName},</p><p style="margin:0 0 24px;color:#555;line-height:1.65;font-size:14px;">Tu pago fue procesado exitosamente. A continuacion encontraras el resumen de tu pedido.</p><table style="width:100%;border-collapse:collapse;margin-bottom:24px;background:#f6f7fa;border-radius:8px;"><tr><td style="padding:14px 16px;vertical-align:top;"><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;font-weight:700;">N de Pedido</div><div style="font-weight:700;color:#0b3c73;font-size:13px;margin-top:4px;">${orderId}</div></td><td style="padding:14px 16px;vertical-align:top;text-align:right;"><div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Fecha</div><div style="font-weight:600;color:#333;font-size:13px;margin-top:4px;">${orderDate}</div></td></tr></table><div style="border-top:2px solid #0b3c73;padding-top:14px;margin-bottom:4px;"><div style="font-size:11px;font-weight:700;color:#0b3c73;text-transform:uppercase;letter-spacing:1.2px;">Productos</div></div><table style="width:100%;border-collapse:collapse;margin:8px 0 4px;">${itemsRows}</table><table style="border-collapse:collapse;width:100%;margin-top:8px;">${discountRow}<tr><td style="width:60%"></td><td style="padding:5px 8px;color:#888;font-size:13px;">Envio</td><td style="padding:5px 0;text-align:right;color:#888;font-size:13px;">$0.00 (digital)</td></tr><tr><td></td><td style="padding:12px 8px 8px;border-top:2px solid #0b3c73;font-weight:700;font-size:14px;color:#0b3c73;">Total</td><td style="padding:12px 0 8px;border-top:2px solid #0b3c73;text-align:right;font-weight:800;font-size:18px;color:#0b3c73;">$${activeTotal}</td></tr></table>${downloadBox}<div style="text-align:center;margin-top:28px;"><a href="https://medu3d.com" target="_blank" style="display:inline-block;padding:13px 32px;background:#0891b2;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">Explorar mas modelos</a></div></div><div style="background:#f6f7fa;border-top:1px solid #e8ebf0;padding:20px 32px;text-align:center;"><p style="margin:0 0 4px;font-weight:900;font-size:16px;"><span style="color:#0b3c73;">Medu</span><span style="color:#d64830;">3D</span></p><p style="margin:0 0 4px;font-size:12px;color:#888;">medu3d.com</p><p style="margin:0;font-size:11px;color:#bbb;">Enviado a ${buyerEmail} por una compra en medu3d.com.</p></div></div></div>`;
     try {
-      await sendConfirmationEmail({
-        email:         buyerEmail,
-        to_name:       buyerName,
-        reply_to:      "contacto@medu3d.com",
-        order_id:      orderId,
-        order_date:    orderDate,
-        items_html:    itemsHtml,
-        subtotal:      `$${subtotal.toFixed(2)}`,
-        discount_line: discountLine,
-        total:         `$${total}`,
-        download_html: downloadHtml,
-      });
-    } catch(e) {
-      console.warn("Email confirmation failed:", e);
-    }
+      await sendConfirmationEmail({ email: buyerEmail, to_name: buyerName, reply_to: "contacto@medu3d.com", order_id: orderId, message_html: messageHtml });
+    } catch(e) { console.warn("Email confirmation failed:", e); }
 
     // 4. Guardar links en estado para mostrarlos en pantalla
     setDownloadLinks(downloadLinks);
@@ -1574,7 +1546,7 @@ footer p{font-size:12px;color:var(--fg3)}
       {page === "product" && selProd && <ProductDetail
         prod={selProd} lang={lang} t={t} cart={cart}
         addCart={addCart} onPaySuccess={handlePaymentSuccess}
-        goPage={goPage}
+        goPage={goPage} applyDiscountFn={applyDiscount}
       />}
 
       {/* ABOUT */}
@@ -1715,13 +1687,30 @@ function CatalogPage({ t, lang, cart, addCart, goProd }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    ProductDetail — página de producto con toggle STL / Maqueta
    ═══════════════════════════════════════════════════════════════════════════ */
-function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
+function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage, applyDiscountFn }) {
   const [type, setType] = useState("stl"); // "stl" | "print"
+  const [pdDiscount, setPdDiscount] = useState(null);
+  const [pdCode, setPdCode]         = useState("");
+  const [pdError, setPdError]       = useState("");
+  const [pdValidating, setPdValidating] = useState(false);
   const tc = t.catalog;
   const isPrint = type === "print";
-  const price = isPrint ? prod.pricePrint : prod.priceSlt;
-  const cartId = prod.id + "_" + type;
-  const inCart = cart.find(c => c.cartId === cartId);
+  const basePrice = isPrint ? prod.pricePrint : prod.priceSlt;
+  const finalPrice = pdDiscount ? pdDiscount.total : basePrice;
+
+  const handleApplyPdCode = async () => {
+    if (!pdCode.trim()) return;
+    setPdValidating(true); setPdError("");
+    const result = await validateCode(pdCode.trim());
+    setPdValidating(false);
+    if (!result.valid) {
+      const msgs = { invalid:"Código inválido o no existe", used:"Ya fue utilizado en este dispositivo", device:"Ya se usó un código en este dispositivo" };
+      setPdError(msgs[result.reason] || msgs.invalid);
+    } else {
+      const r = applyDiscount(basePrice, result);
+      setPdDiscount(r);
+    }
+  };
 
   return (
     <div className="pd">
@@ -1736,17 +1725,11 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
 
           {/* ── TOGGLE STL / MAQUETA ─────────────────────────────────── */}
           <div className="type-toggle">
-            <button
-              className={`tt-btn ${!isPrint ? "on" : ""}`}
-              onClick={() => setType("stl")}
-            >
+            <button className={`tt-btn ${!isPrint ? "on" : ""}`} onClick={() => setType("stl")}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
               {tc.typeStl}
             </button>
-            <button
-              className={`tt-btn ${isPrint ? "on" : ""}`}
-              onClick={() => setType("print")}
-            >
+            <button className={`tt-btn ${isPrint ? "on" : ""}`} onClick={() => setType("print")}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
               {tc.typePrint}
               {prod.pricePrint === null && <span className="tt-cs">{tc.comingSoon}</span>}
@@ -1759,23 +1742,61 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
           {/* ── PRECIO ───────────────────────────────────────────────── */}
           {!isPrint && (
             <>
-              <div className="pr">${prod.priceSlt} <span>USD</span></div>
+              <div className="pr">
+                {pdDiscount ? (
+                  <>
+                    <span style={{textDecoration:"line-through",opacity:.4,fontSize:"0.7em",marginRight:8}}>${prod.priceSlt}</span>
+                    ${pdDiscount.total.toFixed(2)}
+                  </>
+                ) : `$${prod.priceSlt}`}
+                {" "}<span>USD</span>
+              </div>
               <div className="fm">{tc.formats}: {prod.formats}</div>
               <p className="dt">{tc.desc}</p>
               <p className="dd">{prod.desc[lang]}</p>
+
+              {/* Discount code field */}
+              <div style={{margin:"16px 0 4px"}}>
+                {!pdDiscount ? (
+                  <>
+                    <div className="cs-discount">
+                      <input
+                        placeholder={lang==="es" ? "Código de descuento" : "Discount code"}
+                        value={pdCode}
+                        onChange={e => { setPdCode(e.target.value.toUpperCase()); setPdError(""); }}
+                        onKeyDown={e => e.key==="Enter" && handleApplyPdCode()}
+                        disabled={pdValidating}
+                        style={{fontSize:12}}
+                      />
+                      <button className="cs-discount-btn" onClick={handleApplyPdCode} disabled={pdValidating || !pdCode.trim()}>
+                        {pdValidating ? "..." : (lang==="es" ? "Aplicar" : "Apply")}
+                      </button>
+                    </div>
+                    {pdError && <p className="cs-discount-err">{pdError}</p>}
+                  </>
+                ) : (
+                  <div className="cs-discount-applied" style={{marginBottom:8}}>
+                    <span>{pdDiscount.label?.[lang]} · {lang==="es"?"ahorras":"you save"} ${pdDiscount.discount.toFixed(2)}</span>
+                    <button className="cs-discount-remove" onClick={() => { setPdDiscount(null); setPdCode(""); setPdError(""); }}>
+                      {lang==="es" ? "Quitar" : "Remove"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="pd-a">
-                <button
-                  className={`pd-btn cart ${inCart ? "ad" : ""}`}
-                  onClick={() => addCart(prod, "stl")}
-                >
-                  {inCart ? tc.added : tc.addCart}
+                <button className={`pd-btn cart ${cart.find(c=>c.cartId===prod.id+"_stl") ? "ad" : ""}`} onClick={() => addCart(prod, "stl")}>
+                  {cart.find(c=>c.cartId===prod.id+"_stl") ? tc.added : tc.addCart}
                 </button>
               </div>
               <div className="pd-paypal">
                 <PayPalButton
-                  items={[{ ...prod, price: prod.priceSlt, cartId: prod.id + "_stl" }]}
+                  items={[{ ...prod, price: finalPrice, cartId: prod.id + "_stl" }]}
                   lang={lang}
-                  onSuccess={onPaySuccess}
+                  onSuccess={(order) => {
+                    if (pdDiscount?.fingerprint) markCodeUsed(pdDiscount.code, pdDiscount.fingerprint);
+                    onPaySuccess(order, [{ ...prod, price: finalPrice, cartId: prod.id + "_stl" }], pdDiscount);
+                  }}
                 />
               </div>
             </>
@@ -1787,27 +1808,19 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage }) {
               <div className="cs-icon">🖨️</div>
               <h3>{tc.comingSoon}</h3>
               <p>{tc.comingSoonNote}</p>
-              <a
-                href="mailto:contacto@medu3d.com?subject=Notificarme — Maqueta Impresa"
-                className="cs-cta"
-              >
-                {tc.notifyMe} →
-              </a>
+              <a href="mailto:contacto@medu3d.com?subject=Notificarme — Maqueta Impresa" className="cs-cta">{tc.notifyMe} →</a>
             </div>
           )}
 
-          {/* ── MAQUETA DISPONIBLE (cuando pricePrint tenga valor) ───── */}
+          {/* ── MAQUETA DISPONIBLE ───────────────────────────────────── */}
           {isPrint && prod.pricePrint !== null && (
             <>
               <div className="pr">${prod.pricePrint} <span>USD</span></div>
               <p className="dt">{tc.desc}</p>
               <p className="dd">{prod.desc[lang]}</p>
               <div className="pd-a">
-                <button
-                  className={`pd-btn cart ${inCart ? "ad" : ""}`}
-                  onClick={() => addCart(prod, "print")}
-                >
-                  {inCart ? tc.added : tc.addCart}
+                <button className={`pd-btn cart ${cart.find(c=>c.cartId===prod.id+"_print") ? "ad" : ""}`} onClick={() => addCart(prod, "print")}>
+                  {cart.find(c=>c.cartId===prod.id+"_print") ? tc.added : tc.addCart}
                 </button>
               </div>
               <div className="pd-paypal">
