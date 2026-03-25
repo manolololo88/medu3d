@@ -87,6 +87,15 @@ window.generateCodes = (prefix, qty, value, type) => {
   return codes;
 };
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CÓDIGOS REUTILIZABLES (sin límite de uso por dispositivo)
+   Para instituciones, convenios, etc.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const MULTI_USE_CODES = {
+  "ULACIT30": { type: "percent", value: 30, active: true,
+    label: { es: "30% descuento — ULACIT", en: "30% off — ULACIT" } },
+};
+
 const SINGLE_USE_CODES = {
   // ── TEST — 99% off para pruebas internas (eliminar antes de producción) ──
   "TEST-9999-9999": { type: "percent", value: 99, active: true, batch: "TEST" },
@@ -166,25 +175,28 @@ function isCodeUsedLocally(code) {
 
 async function validateCode(code) {
   const key = code.toUpperCase().trim();
-  const def  = SINGLE_USE_CODES[key];
+
+  // Verificar primero si es código reutilizable (institucional)
+  const multi = MULTI_USE_CODES[key];
+  if (multi && multi.active) {
+    return { valid: true, code: key, def: multi, label: multi.label, fingerprint: null, multiUse: true };
+  }
+
+  // Código de uso único
+  const def = SINGLE_USE_CODES[key];
   if (!def || !def.active) return { valid: false, reason: "invalid" };
-
-  // Verificar si ya fue usado en este dispositivo (localStorage)
   if (isCodeUsedLocally(key)) return { valid: false, reason: "used" };
-
-  // Verificar fingerprint
   const fp = await getDeviceFingerprint();
   const used = getUsedCodes();
   const usedByFp = Object.values(used).some(u => u.fp === fp);
   if (usedByFp) return { valid: false, reason: "device" };
-
   const label = BATCH_LABELS[def.batch] || { es: `${def.value}${def.type==="percent"?"%":"$"} de descuento`, en: `${def.value}${def.type==="percent"?"%":"$"} off` };
   return { valid: true, code: key, def, label, fingerprint: fp };
 }
 
 function applyDiscount(subtotal, validationResult) {
   if (!validationResult?.valid) return null;
-  const { def, label } = validationResult;
+  const { def, label, multiUse } = validationResult;
   const discount = def.type === "percent"
     ? parseFloat((subtotal * def.value / 100).toFixed(2))
     : Math.min(def.value, subtotal);
@@ -194,6 +206,7 @@ function applyDiscount(subtotal, validationResult) {
     label,
     code: validationResult.code,
     fingerprint: validationResult.fingerprint,
+    multiUse: multiUse || false,
   };
 }
 
@@ -360,7 +373,7 @@ const P = [
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
     region: "extremidades", tissue: "oseo",
-    rotation: [-Math.PI/2, 0, 0],
+    rotation: [0, 0, 0],
     name: { es: "Huesos del Pie", en: "Foot Bones" },
     tag: { es: "26 huesos · Tarso · Metatarso · Falanges", en: "26 bones · Tarsals · Metatarsals · Phalanges" },
     desc: { es: "Conjunto completo de los 26 huesos del pie: tarso, metatarsianos y falanges. Segmentado desde CT. Para podología, ortopedia y biomecánica.", en: "Complete set of 26 foot bones: tarsals, metatarsals and phalanges. Segmented from CT. For podiatry, orthopedics and biomechanics." },
@@ -370,7 +383,7 @@ const P = [
     hostedBtn: "637LDGMDRNE5N", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#7a8fa3", geo: "spine",
     region: "columna", tissue: "oseo",
-    rotation: [0, 0, 0],
+    rotation: [-Math.PI/2, 0, 0],
     name: { es: "Columna Torácica y Lumbar", en: "Thoracic & Lumbar Spine" },
     tag: { es: "T1-L5 · Sacro · Discos intervertebrales", en: "T1-L5 · Sacrum · Intervertebral discs" },
     desc: { es: "Columna vertebral completa desde T1 hasta L5 con sacro y discos intervertebrales diferenciados. Detalle de procesos espinosos, transversos y articulares. Para estudio ortopédico y quirúrgico.", en: "Complete spine from T1 to L5 with sacrum and differentiated intervertebral discs. Detail of spinous, transverse and articular processes. For orthopedic and surgical study." },
@@ -882,8 +895,8 @@ export default function App() {
     const activeCart     = itemsOverride || cart;
     const activeDiscount = discountOverride || appliedDiscount;
 
-    // 1. Quemar código de descuento si se usó
-    if (activeDiscount?.code && activeDiscount?.fingerprint) {
+    // 1. Quemar código de descuento si se usó (solo códigos de uso único)
+    if (activeDiscount?.code && activeDiscount?.fingerprint && !activeDiscount?.multiUse) {
       markCodeUsed(activeDiscount.code, activeDiscount.fingerprint);
     }
 
@@ -1292,40 +1305,11 @@ footer p{font-size:12px;color:var(--fg3)}
               : "Thank you for your purchase. You'll also receive a confirmation email with the links."}</p>
 
             {/* Download links section */}
-            {Object.keys(downloadLinks).length > 0 ? (
-              <div className="ps-downloads">
-                <div className="ps-dl-title">
-                  {lang === "es" ? "📥 Descarga tus archivos" : "📥 Download your files"}
-                </div>
-                {Object.entries(downloadLinks).map(([pid, files]) => {
-                  const prod = P.find(p => p.id === pid);
-                  return (
-                    <div className="ps-dl-item" key={pid}>
-                      <div className="ps-dl-name">{prod?.name[lang] || pid}</div>
-                      <div className="ps-dl-btns">
-                        {files.map(f => (
-                          <a key={f.filename} href={f.url} className="ps-dl-btn" download={f.filename}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            {lang === "es" ? "Descargar archivos" : "Download files"} ({f.filename.split(".").pop().toUpperCase()})
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-                <p className="ps-dl-note">
-                  {lang === "es"
-                    ? "⏱ Los links son válidos por 2 horas. También los recibirás en tu correo."
-                    : "⏱ Links are valid for 2 hours. You'll also receive them by email."}
-                </p>
-              </div>
-            ) : (
-              <p style={{fontSize:12,color:"var(--fg3)",marginBottom:20}}>
-                {lang === "es"
-                  ? "Los links de descarga llegarán a tu correo en breve."
-                  : "Download links will arrive to your email shortly."}
-              </p>
-            )}
+            <p style={{fontSize:13,color:"var(--fg2)",marginBottom:24,lineHeight:1.6}}>
+              {lang === "es"
+                ? "Los archivos y links de descarga llegarán a tu correo en breve."
+                : "Your files and download links will arrive by email shortly."}
+            </p>
 
             <button className="ps-btn" onClick={() => { setPaymentDone(false); setDownloadLinks({}); }}>
               {lang === "es" ? "Cerrar" : "Close"}
@@ -1805,7 +1789,9 @@ function ProductDetail({ prod, lang, t, cart, addCart, onPaySuccess, goPage, app
           {/* ── MAQUETA PRÓXIMAMENTE ─────────────────────────────────── */}
           {isPrint && prod.pricePrint === null && (
             <div className="cs-box">
-              <div className="cs-icon">🖨️</div>
+              <div className="cs-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{opacity:.5}}><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+              </div>
               <h3>{tc.comingSoon}</h3>
               <p>{tc.comingSoonNote}</p>
               <a href="mailto:contacto@medu3d.com?subject=Notificarme — Maqueta Impresa" className="cs-cta">{tc.notifyMe} →</a>
