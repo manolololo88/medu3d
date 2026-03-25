@@ -7,8 +7,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
   # Content Security Policy
-  # Permite: tu dominio, PayPal SDK, EmailJS, Google Fonts, Google Analytics, ipify (fingerprint)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.sandbox.paypal.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://www.paypal.com https://api-m.paypal.com https://api.emailjs.com https://api.ipify.org https://www.google-analytics.com https://formspree.io; frame-src https://www.paypal.com https://www.sandbox.paypal.com; object-src 'none'; base-uri 'self';
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.sandbox.paypal.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://www.paypal.com https://api-m.paypal.com https://api-m.sandbox.paypal.com https://api.emailjs.com https://api.ipify.org https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.analytics.google.com https://region1.google-analytics.com https://formspree.io https://medu3d-downloads.manuelczelaya.workers.dev; frame-src https://www.paypal.com https://www.sandbox.paypal.com; object-src 'none'; base-uri 'self';
 
   # Cache para assets estáticos
 /assets/*
