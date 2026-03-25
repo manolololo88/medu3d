@@ -28,8 +28,8 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeerrvre";
      {{cost.tax}}     → siempre "0.00"
      {{discount_line}}→ línea de descuento o cadena vacía
    ═══════════════════════════════════════════════════════════════════════════ */
-const EMAILJS_SERVICE_ID  = "service_gmail";
-const EMAILJS_TEMPLATE_ID = "order_confirmation";  // ← el nombre que le diste al template
+const EMAILJS_SERVICE_ID  = "service_ekpjlgg";
+const EMAILJS_TEMPLATE_ID = "template_5wh599e";
 const EMAILJS_PUBLIC_KEY  = "XtMo9JT1OK78Yl6I_";
 
 /* ═══════════════════════════════════════════════════════════════════════════
