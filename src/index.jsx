@@ -936,6 +936,8 @@ export default function App() {
       await sendConfirmationEmail({
         email:           buyerEmail,
         to_name:         buyerName,
+        from_name:       "Medu 3D",
+        reply_to:        "contacto@medu3d.com",
         order_id:        orderId,
         order_date:      orderDate,
         orders:          JSON.stringify(ordersArray),
@@ -943,9 +945,7 @@ export default function App() {
         "cost.shipping": "0.00",
         "cost.tax":      "0.00",
         discount_line:   discountLine,
-        download_links:  downloadSection || (lang === "es"
-          ? "Te enviaremos los links en las próximas horas."
-          : "We'll send you the links within a few hours."),
+        download_links:  downloadSection || "",
       });
     } catch(e) {
       console.warn("Email confirmation failed:", e);
