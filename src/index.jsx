@@ -30,7 +30,7 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/xeerrvre";
    ═══════════════════════════════════════════════════════════════════════════ */
 const EMAILJS_SERVICE_ID  = "service_ekpjlgg";
 const EMAILJS_TEMPLATE_ID = "template_5wh599e";
-const EMAILJS_PUBLIC_KEY  = "XtMo9JT1OK78Yl6I_";
+const EMAILJS_PUBLIC_KEY  = "1DCuPwt8qDzFJKouZ";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CLOUDFLARE WORKER — Links de descarga firmados
@@ -46,7 +46,10 @@ async function sendConfirmationEmail(params) {
       s.onload = res; s.onerror = rej;
       document.head.appendChild(s);
     });
-    window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    window.emailjs.init({
+      publicKey:  EMAILJS_PUBLIC_KEY,
+      privateKey: "ikqFai4I-5LHV2zItgQvX",
+    });
   }
   return window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
 }
