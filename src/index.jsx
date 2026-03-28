@@ -373,7 +373,7 @@ const P = [
     hostedBtn: "DHLY63KNSUSFU", hostedBtnPrint: null,
     formats: ".STL, .OBJ", color: "#c8b090", geo: "foot",
     region: "extremidades", tissue: "oseo",
-    rotation: [0, 0, -Math.PI/2],
+    rotation: [0, 0, 30],
     name: { es: "Huesos del Pie", en: "Foot Bones" },
     tag: { es: "26 huesos · Tarso · Metatarso · Falanges", en: "26 bones · Tarsals · Metatarsals · Phalanges" },
     desc: { es: "Conjunto completo de los 26 huesos del pie: tarso, metatarsianos y falanges. Segmentado desde CT. Para podología, ortopedia y biomecánica.", en: "Complete set of 26 foot bones: tarsals, metatarsals and phalanges. Segmented from CT. For podiatry, orthopedics and biomechanics." },
