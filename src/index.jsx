@@ -101,8 +101,6 @@ const MULTI_USE_CODES = {
 
 const SINGLE_USE_CODES = {
   // ── TEST — 99% off para pruebas internas (eliminar antes de producción) ──
-  "TEST-9999-9999": { type: "percent", value: 99, active: true, batch: "TEST" },
-  "TEST-GKCL-MLM5": { type: "percent", value: 99, active: true, batch: "TEST" },
   "BV-XMKR-7T4N": { type: "percent", value: 15, active: true, batch: "BV" },
   "BV-2HJQ-9PLC": { type: "percent", value: 15, active: true, batch: "BV" },
   "BV-RNFT-6W8A": { type: "percent", value: 15, active: true, batch: "BV" },
