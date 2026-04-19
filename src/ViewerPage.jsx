@@ -31,6 +31,7 @@ export default function ViewerPage({ onBack }) {
   const [msrModal, setMsrModal]         = useState(null); // { x, y, dist }
   const [presMode, setPresMode]         = useState(false);
   const [autoRotate, setAutoRotate]     = useState(false);
+  const [darkMode, setDarkMode]           = useState(true);
 
   // DOM refs
   const canvasRef    = useRef(null);
@@ -39,6 +40,49 @@ export default function ViewerPage({ onBack }) {
   const fileInputRef = useRef(null);
   const sessionInputRef = useRef(null);
   const annTextRef   = useRef(null);
+  const autoSaveRef  = useRef(null);
+
+  // Warn before closing tab
+  useEffect(() => {
+    const handler = (e) => {
+      if (pieceList.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [pieceList.length]);
+
+  // Autosave reminder every 20 minutes
+  useEffect(() => {
+    if (autoSaveRef.current) clearInterval(autoSaveRef.current);
+    autoSaveRef.current = setInterval(() => {
+      if (pieceList.length > 0) {
+        const save = window.confirm('Han pasado 20 minutos. Guarda tu sesion para no perder el trabajo.');
+        if (save) {
+          const tr = threeRef.current;
+          const data = {
+            version: 2, savedAt: new Date().toISOString(),
+            pieces: tr.pieces.map(p => ({ name: p.name, color: p.color, visible: p.visible, opacity: p.opacity })),
+            annotations: tr.annotations.map(a => ({ point: [a.point.x,a.point.y,a.point.z], text: a.text, id: a.id })),
+            measurements: tr.measurements.map(m => ({ p1: m.p1, p2: m.p2, dist: m.dist, mid: m.mid, id: m.id })),
+            annCounter: tr.annCounter, msrCounter: tr.msrCounter,
+          };
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = `medu3d-autosave-${Date.now()}.json`; a.click();
+        }
+      }
+    }, 20 * 60 * 1000);
+    return () => clearInterval(autoSaveRef.current);
+  }, [pieceList.length]);
+
+  // Update renderer background on darkMode toggle
+  useEffect(() => {
+    threeRef.current.renderer?.setClearColor(darkMode ? 0x060b14 : 0xf0f2f5);
+  }, [darkMode]);
+
 
   // Three.js state held in refs (not React state, no re-renders needed)
   const threeRef = useRef({
@@ -92,6 +136,7 @@ export default function ViewerPage({ onBack }) {
     tr.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     tr.renderer.localClippingEnabled = true;
     tr.renderer.setClearColor(0x060b14);
+    threeRef.current._darkMode = true;
 
     tr.scene  = new THREE.Scene();
     tr.camera = new THREE.PerspectiveCamera(42, 1, 0.01, 10000);
@@ -782,7 +827,10 @@ export default function ViewerPage({ onBack }) {
 
   // ─── render ───────────────────────────────────────────────────────────────
   return (
-    <div style={s.root}>
+    <div style={{...s.root,
+      background: darkMode ? '#060b14' : '#f0f2f5',
+      color: darkMode ? '#c2d5ee' : '#15172a'
+    }}>
       {/* inject label styles once */}
       <style>{`
         .viewer-ann-label {
@@ -805,7 +853,10 @@ export default function ViewerPage({ onBack }) {
 
       {/* HEADER */}
       {!presMode && (
-        <header style={s.header}>
+        <header style={{...s.header,
+          background: darkMode ? '#0b1525' : '#ffffff',
+          borderBottom: darkMode ? '1px solid #182d47' : '1px solid #e0e4ea'
+        }}>
           {onBack && (
             <button onClick={onBack} style={s.backBtn} title="Volver al sitio">
               {icons.back}
@@ -826,13 +877,27 @@ export default function ViewerPage({ onBack }) {
           <input type="file" ref={fileInputRef} multiple accept=".stl" style={{display:'none'}}
             onChange={e => { loadFiles(Array.from(e.target.files)); e.target.value=''; }}/>
           <span style={s.demoLnk} onClick={loadDemo}>Logo Medu3D</span>
+          <div style={s.hdiv}/>
+          <button
+            style={{...s.hbtn, gap:5}}
+            onClick={() => setDarkMode(d => !d)}
+            title={darkMode ? 'Modo claro' : 'Modo oscuro'}>
+            {darkMode
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/></svg>
+            }
+            {darkMode ? 'Claro' : 'Oscuro'}
+          </button>
         </header>
       )}
 
       <div style={s.main}>
         {/* SIDEBAR */}
         {!presMode && (
-          <div style={s.sidebar}>
+          <div style={{...s.sidebar,
+            background: darkMode ? '#0b1525' : '#ffffff',
+            borderRight: darkMode ? '1px solid #182d47' : '1px solid #e0e4ea'
+          }}>
             {/* Pieces */}
             <div style={s.secHdr}>
               <span>PIEZAS</span>
@@ -1017,7 +1082,10 @@ export default function ViewerPage({ onBack }) {
 
       {/* BOTTOM */}
       {!presMode && (
-        <div style={s.bottom}>
+        <div style={{...s.bottom,
+          background: darkMode ? '#0b1525' : '#ffffff',
+          borderTop: darkMode ? '1px solid #182d47' : '1px solid #e0e4ea'
+        }}>
           <span style={s.botLbl}>CORTE DE SECCION</span>
           {(['x','y','z']).map(ax => (
             <div key={ax} style={{display:'flex',alignItems:'center',gap:7}}>
