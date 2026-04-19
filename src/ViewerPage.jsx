@@ -132,7 +132,7 @@ export default function ViewerPage({ onBack }) {
     const viewport = viewportRef.current;
 
     // Main renderer
-    tr.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    tr.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, stencil: true });
     tr.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     tr.renderer.localClippingEnabled = true;
     tr.renderer.setClearColor(0x060b14);
@@ -150,6 +150,7 @@ export default function ViewerPage({ onBack }) {
 
     tr.modelGroup = new THREE.Group(); tr.scene.add(tr.modelGroup);
     tr.msrGroup   = new THREE.Group(); tr.scene.add(tr.msrGroup);
+    tr.capGroup   = new THREE.Group(); tr.scene.add(tr.capGroup);
 
     tr.clipPlanes = {
       x: new THREE.Plane(new THREE.Vector3(-1,0,0), 0),
@@ -298,7 +299,45 @@ export default function ViewerPage({ onBack }) {
         if (ax === 'y') { tr.clipPlanes.y.constant = tr.boundsCenter.y + offset; active.push(tr.clipPlanes.y); }
         if (ax === 'z') { tr.clipPlanes.z.constant = tr.boundsCenter.z + offset; active.push(tr.clipPlanes.z); }
       });
-      tr.pieces.forEach(p => { p.mesh.material.clippingPlanes = active; p.mesh.material.needsUpdate = true; });
+
+      // Apply clipping planes to meshes with stencil write
+      tr.pieces.forEach(p => {
+        p.mesh.material.clippingPlanes = active;
+        p.mesh.material.stencilWrite = active.length > 0;
+        p.mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
+        p.mesh.material.stencilZPass = THREE.ReplaceStencilOp;
+        p.mesh.renderOrder = 1;
+        p.mesh.material.needsUpdate = true;
+      });
+
+      // Rebuild cap planes (one per active clip plane)
+      while (tr.capGroup.children.length) tr.capGroup.remove(tr.capGroup.children[0]);
+      active.forEach((plane, pi) => {
+        // One cap mesh per piece, colored to match the piece
+        tr.pieces.forEach(p => {
+          if (!p.visible) return;
+          const capGeo = new THREE.PlaneGeometry(tr.boundsSize * 4, tr.boundsSize * 4);
+          // Orient the cap plane to be coplanar with the clip plane
+          const capMesh = new THREE.Mesh(capGeo, new THREE.MeshBasicMaterial({
+            color: new THREE.Color(p.color),
+            stencilWrite: true,
+            stencilRef: 0,
+            stencilFunc: THREE.NotEqualStencilFunc,
+            stencilFail: THREE.ReplaceStencilOp,
+            stencilZFail: THREE.ReplaceStencilOp,
+            stencilZPass: THREE.ReplaceStencilOp,
+            clippingPlanes: active.filter((_,j) => j !== pi),
+            depthWrite: false,
+            side: THREE.DoubleSide,
+          }));
+          // Align cap to the clip plane
+          const n = plane.normal.clone();
+          capMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), n);
+          capMesh.position.copy(n.clone().multiplyScalar(-plane.constant));
+          capMesh.renderOrder = 2;
+          tr.capGroup.add(capMesh);
+        });
+      });
     }
     tr.updateClipping = updateClipping;
 
@@ -316,10 +355,39 @@ export default function ViewerPage({ onBack }) {
 
     function applyExplosion(t_val) {
       computeBounds();
-      tr.pieces.forEach(p => {
+      if (tr.pieces.length === 0) return;
+
+      // Compute each piece's center
+      const centers = tr.pieces.map(p => {
         const gb = new THREE.Box3().setFromBufferAttribute(p.mesh.geometry.attributes.position);
-        const pc = new THREE.Vector3(); gb.getCenter(pc);
-        const dir = pc.clone().sub(tr.boundsCenter);
+        const c = new THREE.Vector3(); gb.getCenter(c); return c;
+      });
+
+      // Detect dominant axis: which axis has the most variance among piece centers?
+      const axes = ['x','y','z'];
+      const variance = {};
+      axes.forEach(ax => {
+        const vals = centers.map(c => c[ax]);
+        const mean = vals.reduce((a,b) => a+b, 0) / vals.length;
+        variance[ax] = vals.reduce((s,v) => s + (v-mean)**2, 0) / vals.length;
+      });
+      const maxVar = Math.max(variance.x, variance.y, variance.z);
+      const totalVar = variance.x + variance.y + variance.z;
+      // If one axis holds >60% of variance, treat as linear model (spine, etc.)
+      const isLinear = maxVar / (totalVar || 1) > 0.60;
+
+      tr.pieces.forEach((p, i) => {
+        const pc = centers[i];
+        let dir;
+        if (isLinear) {
+          // Explode along the dominant axis only
+          const domAx = axes.reduce((a,b) => variance[a] > variance[b] ? a : b);
+          dir = new THREE.Vector3();
+          dir[domAx] = pc[domAx] - tr.boundsCenter[domAx];
+        } else {
+          // Radial explosion from center (original behavior)
+          dir = pc.clone().sub(tr.boundsCenter);
+        }
         if (dir.length() < 0.001) { p.mesh.position.set(0,0,0); return; }
         p.mesh.position.copy(dir.normalize().multiplyScalar(t_val * tr.boundsSize * 0.8));
       });
@@ -486,7 +554,7 @@ export default function ViewerPage({ onBack }) {
 
     function createMarker(pos) {
       const m = new THREE.Mesh(
-        new THREE.SphereGeometry(Math.max(tr.boundsSize * 0.012, 0.005), 10, 10),
+        new THREE.SphereGeometry(Math.max(tr.boundsSize * 0.004, 0.002), 10, 10),
         new THREE.MeshBasicMaterial({ color: 0x2980b9, depthTest: false })
       );
       m.position.copy(pos); return m;
@@ -569,6 +637,8 @@ export default function ViewerPage({ onBack }) {
     const mat = new THREE.MeshPhongMaterial({
       color: new THREE.Color(color), specular: new THREE.Color(0x222222), shininess: 35,
       side: THREE.DoubleSide, clippingPlanes: [], transparent: opacity < 1, opacity,
+      stencilWrite: false, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc,
+      stencilZPass: THREE.ReplaceStencilOp,
     });
     const mesh = new THREE.Mesh(geometry, mat); mesh.visible = visible;
     tr.modelGroup.add(mesh);
@@ -758,7 +828,17 @@ export default function ViewerPage({ onBack }) {
     data.measurements?.forEach(md => {
       const ll = document.createElement('div'); ll.className = 'viewer-msr-label';
       ll.textContent = md.dist.toFixed(2) + ' mm'; viewportRef.current?.appendChild(ll);
-      tr.measurements.push({ p1: md.p1, p2: md.p2, dist: md.dist, mid: md.mid, id: md.id, lineLabel: ll });
+      // Recreate 3D geometry
+      const p1v = new THREE.Vector3(...md.p1);
+      const p2v = new THREE.Vector3(...md.p2);
+      const m1 = tr.createMarker(p1v); tr.msrGroup.add(m1);
+      const m2 = tr.createMarker(p2v); tr.msrGroup.add(m2);
+      const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([p1v, p2v]),
+        new THREE.LineBasicMaterial({ color: 0x2980b9 })
+      );
+      tr.msrGroup.add(line);
+      tr.measurements.push({ p1: md.p1, p2: md.p2, dist: md.dist, mid: md.mid, id: md.id, lineLabel: ll, m1, m2, line });
     });
     if (data.msrCounter) tr.msrCounter = data.msrCounter; tr.syncMsrList?.();
     if (data.camera) {
