@@ -131,7 +131,7 @@ export default function ViewerPage({ onBack }) {
     const vcCanvas = vcCanvasRef.current;
     const viewport = viewportRef.current;
 
-    // Main renderer
+    // Main renderer — stencil:true needed for cross-section capping
     tr.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, stencil: true });
     tr.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     tr.renderer.localClippingEnabled = true;
@@ -289,6 +289,24 @@ export default function ViewerPage({ onBack }) {
     }
     tr.computeBounds = computeBounds;
 
+    function buildCapMaterial(color, otherPlanes) {
+      return new THREE.MeshBasicMaterial({
+        color,
+        side: THREE.DoubleSide,
+        clippingPlanes: otherPlanes,
+        depthWrite: false,
+        stencilWrite: true,
+        stencilRef: 1,
+        stencilFunc: THREE.EqualStencilFunc,
+        stencilFail: THREE.KeepStencilOp,
+        stencilZFail: THREE.KeepStencilOp,
+        stencilZPass: THREE.ZeroStencilOp, // clear after painting so caps don't accumulate
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+      });
+    }
+
     function updateClipping(cs, cv) {
       computeBounds();
       const active = [];
@@ -300,43 +318,54 @@ export default function ViewerPage({ onBack }) {
         if (ax === 'z') { tr.clipPlanes.z.constant = tr.boundsCenter.z + offset; active.push(tr.clipPlanes.z); }
       });
 
-      // Apply clipping planes to meshes with stencil write
+      // Pass 1 — pieces write stencil=1 where they are visible after clipping
       tr.pieces.forEach(p => {
-        p.mesh.material.clippingPlanes = active;
-        p.mesh.material.stencilWrite = active.length > 0;
-        p.mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
-        p.mesh.material.stencilZPass = THREE.ReplaceStencilOp;
-        p.mesh.renderOrder = 1;
-        p.mesh.material.needsUpdate = true;
+        const mat = p.mesh.material;
+        mat.clippingPlanes = active;
+        if (active.length > 0) {
+          mat.stencilWrite = true;
+          mat.stencilRef   = 1;
+          mat.stencilFunc  = THREE.AlwaysStencilFunc;
+          mat.stencilZPass = THREE.ReplaceStencilOp;
+          p.mesh.renderOrder = 1;
+        } else {
+          mat.stencilWrite = false;
+          p.mesh.renderOrder = 0;
+        }
+        mat.needsUpdate = true;
       });
 
-      // Rebuild cap planes (one per active clip plane)
-      while (tr.capGroup.children.length) tr.capGroup.remove(tr.capGroup.children[0]);
+      // Pass 2 — rebuild cap planes (one per active clip, sized to bounding box)
+      while (tr.capGroup.children.length) {
+        const c = tr.capGroup.children[0];
+        c.geometry?.dispose(); c.material?.dispose();
+        tr.capGroup.remove(c);
+      }
+
+      if (active.length === 0) return;
+
+      // Use average color of visible pieces for the cap fill
+      const visiblePieces = tr.pieces.filter(p => p.visible);
+      const avgColor = visiblePieces.length > 0
+        ? new THREE.Color(visiblePieces[Math.floor(visiblePieces.length / 2)].color)
+        : new THREE.Color(0x888888);
+
       active.forEach((plane, pi) => {
-        // One cap mesh per piece, colored to match the piece
-        tr.pieces.forEach(p => {
-          if (!p.visible) return;
-          const capGeo = new THREE.PlaneGeometry(tr.boundsSize * 4, tr.boundsSize * 4);
-          // Orient the cap plane to be coplanar with the clip plane
-          const capMesh = new THREE.Mesh(capGeo, new THREE.MeshBasicMaterial({
-            color: new THREE.Color(p.color),
-            stencilWrite: true,
-            stencilRef: 0,
-            stencilFunc: THREE.NotEqualStencilFunc,
-            stencilFail: THREE.ReplaceStencilOp,
-            stencilZFail: THREE.ReplaceStencilOp,
-            stencilZPass: THREE.ReplaceStencilOp,
-            clippingPlanes: active.filter((_,j) => j !== pi),
-            depthWrite: false,
-            side: THREE.DoubleSide,
-          }));
-          // Align cap to the clip plane
-          const n = plane.normal.clone();
-          capMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), n);
-          capMesh.position.copy(n.clone().multiplyScalar(-plane.constant));
-          capMesh.renderOrder = 2;
-          tr.capGroup.add(capMesh);
-        });
+        const otherPlanes = active.filter((_, j) => j !== pi);
+        // Cap plane sized generously to cover the full model cross-section
+        const sz = tr.boundsSize * 3;
+        const capGeo = new THREE.PlaneGeometry(sz, sz);
+        const capMat = buildCapMaterial(avgColor, otherPlanes);
+        const capMesh = new THREE.Mesh(capGeo, capMat);
+        // Orient cap plane perpendicular to the clip plane normal
+        capMesh.quaternion.setFromUnitVectors(
+          new THREE.Vector3(0, 0, 1),
+          plane.normal.clone()
+        );
+        // Position on the clip plane: plane equation is n.x + d = 0, so x = -d*n
+        capMesh.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
+        capMesh.renderOrder = 2;
+        tr.capGroup.add(capMesh);
       });
     }
     tr.updateClipping = updateClipping;
@@ -355,39 +384,10 @@ export default function ViewerPage({ onBack }) {
 
     function applyExplosion(t_val) {
       computeBounds();
-      if (tr.pieces.length === 0) return;
-
-      // Compute each piece's center
-      const centers = tr.pieces.map(p => {
+      tr.pieces.forEach(p => {
         const gb = new THREE.Box3().setFromBufferAttribute(p.mesh.geometry.attributes.position);
-        const c = new THREE.Vector3(); gb.getCenter(c); return c;
-      });
-
-      // Detect dominant axis: which axis has the most variance among piece centers?
-      const axes = ['x','y','z'];
-      const variance = {};
-      axes.forEach(ax => {
-        const vals = centers.map(c => c[ax]);
-        const mean = vals.reduce((a,b) => a+b, 0) / vals.length;
-        variance[ax] = vals.reduce((s,v) => s + (v-mean)**2, 0) / vals.length;
-      });
-      const maxVar = Math.max(variance.x, variance.y, variance.z);
-      const totalVar = variance.x + variance.y + variance.z;
-      // If one axis holds >60% of variance, treat as linear model (spine, etc.)
-      const isLinear = maxVar / (totalVar || 1) > 0.60;
-
-      tr.pieces.forEach((p, i) => {
-        const pc = centers[i];
-        let dir;
-        if (isLinear) {
-          // Explode along the dominant axis only
-          const domAx = axes.reduce((a,b) => variance[a] > variance[b] ? a : b);
-          dir = new THREE.Vector3();
-          dir[domAx] = pc[domAx] - tr.boundsCenter[domAx];
-        } else {
-          // Radial explosion from center (original behavior)
-          dir = pc.clone().sub(tr.boundsCenter);
-        }
+        const pc = new THREE.Vector3(); gb.getCenter(pc);
+        const dir = pc.clone().sub(tr.boundsCenter);
         if (dir.length() < 0.001) { p.mesh.position.set(0,0,0); return; }
         p.mesh.position.copy(dir.normalize().multiplyScalar(t_val * tr.boundsSize * 0.8));
       });
@@ -637,8 +637,6 @@ export default function ViewerPage({ onBack }) {
     const mat = new THREE.MeshPhongMaterial({
       color: new THREE.Color(color), specular: new THREE.Color(0x222222), shininess: 35,
       side: THREE.DoubleSide, clippingPlanes: [], transparent: opacity < 1, opacity,
-      stencilWrite: false, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc,
-      stencilZPass: THREE.ReplaceStencilOp,
     });
     const mesh = new THREE.Mesh(geometry, mat); mesh.visible = visible;
     tr.modelGroup.add(mesh);
@@ -828,7 +826,6 @@ export default function ViewerPage({ onBack }) {
     data.measurements?.forEach(md => {
       const ll = document.createElement('div'); ll.className = 'viewer-msr-label';
       ll.textContent = md.dist.toFixed(2) + ' mm'; viewportRef.current?.appendChild(ll);
-      // Recreate 3D geometry
       const p1v = new THREE.Vector3(...md.p1);
       const p2v = new THREE.Vector3(...md.p2);
       const m1 = tr.createMarker(p1v); tr.msrGroup.add(m1);
