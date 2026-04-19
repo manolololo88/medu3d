@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
+import ViewerPage from './ViewerPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONFIGURACIÓN — Cambia estas variables antes de subir al servidor
@@ -726,7 +727,7 @@ export default function App() {
   const [page, setPage] = useState(() => {
     // Lee la página inicial desde el hash de la URL si existe
     const h = window.location.hash.replace("#", "");
-    return ["home","catalog","quote","about","contact","product","privacy","terms"].includes(h) ? h : "home";
+    return ["home","catalog","quote","about","contact","product","privacy","terms","viewer"].includes(h) ? h : "home";
   });
   const [selProd, setSelProd] = useState(null);
   const [cart, setCart] = useState([]);
@@ -1327,6 +1328,9 @@ footer p{font-size:12px;color:var(--fg3)}
           <li><button className={`nb ${page === "quote" ? "on" : ""}`} onClick={() => goPage("quote")}>{t.nav.quote}</button></li>
           <li><button className={`nb ${page === "about" ? "on" : ""}`} onClick={() => goPage("about")}>{t.nav.about}</button></li>
           <li><button className={`nb ${page === "contact" ? "on" : ""}`} onClick={() => goPage("contact")}>{t.nav.contact}</button></li>
+          <li><button className="nb" style={{background:"#d64830",color:"white",border:"none",borderRadius:10}} onClick={() => goPage("viewer")}>
+            {lang === "es" ? "Viewer 3D" : "3D Viewer"}
+          </button></li>
           <li><button className="nb" onClick={() => setCartOpen(true)}>{t.nav.cart}{cart.length > 0 && <span className="cb">{cart.length}</span>}</button></li>
           <li><button className="lb" onClick={() => setLang(lang === "es" ? "en" : "es")}>{lang === "es" ? "EN" : "ES"}</button></li>
         </ul>
@@ -1339,6 +1343,7 @@ footer p{font-size:12px;color:var(--fg3)}
         <button onClick={() => goPage("quote")}>{t.nav.quote}</button>
         <button onClick={() => goPage("about")}>{t.nav.about}</button>
         <button onClick={() => goPage("contact")}>{t.nav.contact}</button>
+        <button style={{color:"#d64830",fontWeight:700}} onClick={() => { goPage("viewer"); setMenuOpen(false); }}>{lang === "es" ? "Viewer 3D" : "3D Viewer"}</button>
         <button onClick={() => { setCartOpen(true); setMenuOpen(false); }}>{t.nav.cart} {cart.length > 0 && `(${cart.length})`}</button>
         <button className="lb" onClick={() => { setLang(lang === "es" ? "en" : "es"); setMenuOpen(false); }}>{lang === "es" ? "English" : "Español"}</button>
       </div>
@@ -1546,6 +1551,7 @@ footer p{font-size:12px;color:var(--fg3)}
       {/* LEGAL */}
       {page === "privacy" && <LegalPage type="privacy" lang={lang} goPage={goPage} />}
       {page === "terms"   && <LegalPage type="terms"   lang={lang} goPage={goPage} />}
+      {page === "viewer"  && <ViewerPage onBack={() => goPage("home")} />}
       </div>
 
       {/* Floating WhatsApp */}
