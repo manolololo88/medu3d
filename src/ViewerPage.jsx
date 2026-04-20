@@ -288,16 +288,6 @@ export default function ViewerPage({ onBack }) {
     }
     tr.computeBounds = computeBounds;
 
-    // Remove stencil children previously added to a mesh
-    function clearStencilChildren(mesh) {
-      const toRemove = mesh.children.filter(c => c.userData.isStencilHelper);
-      toRemove.forEach(c => {
-        if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
-        else c.material?.dispose();
-        mesh.remove(c);
-      });
-    }
-
     function updateClipping(cs, cv) {
       computeBounds();
       const active = [];
@@ -309,87 +299,87 @@ export default function ViewerPage({ onBack }) {
         if (ax === 'z') { tr.clipPlanes.z.constant = tr.boundsCenter.z + offset; active.push(tr.clipPlanes.z); }
       });
 
-      // Remove old cap plane from scene
+      // Remove old stencil helpers and cap meshes
+      tr.pieces.forEach(p => {
+        const old = p.mesh.children.filter(c => c.userData.stencilHelper);
+        old.forEach(c => { c.material?.dispose(); c.geometry?.dispose(); p.mesh.remove(c); });
+      });
       if (tr._capMeshes) {
-        tr._capMeshes.forEach(c => { c.geometry?.dispose(); c.material?.dispose(); tr.scene.remove(c); });
+        tr._capMeshes.forEach(c => { c.material?.dispose(); c.geometry?.dispose(); tr.scene.remove(c); });
       }
       tr._capMeshes = [];
 
-      tr.pieces.forEach(p => {
-        // Remove old stencil helpers
-        clearStencilChildren(p.mesh);
+      // Apply clipping to main meshes
+      tr.pieces.forEach(p => { p.mesh.material.clippingPlanes = active; p.mesh.material.needsUpdate = true; });
 
-        // Apply clipping to main mesh
-        p.mesh.material.clippingPlanes = active;
-        p.mesh.material.needsUpdate = true;
+      if (active.length === 0) return;
 
-        if (active.length === 0) return;
+      // Each piece gets a unique stencilRef (1, 2, 3, ...) so they don't
+      // interfere with each other in the stencil buffer
+      tr.pieces.forEach((p, pieceIdx) => {
+        if (!p.visible) return;
+        const ref = (pieceIdx % 254) + 1; // 1..254, never 0
 
-        // For each active clip plane, add back+front stencil helpers as children
-        // Children inherit the parent mesh's world matrix automatically
         active.forEach((plane, pi) => {
           const otherPlanes = active.filter((_, j) => j !== pi);
+          const allPlanes   = [plane, ...otherPlanes];
+
+          // Clone geometry so each helper has independent draw calls
+          const geoBack  = p.mesh.geometry.clone();
+          const geoFront = p.mesh.geometry.clone();
 
           const matBack = new THREE.MeshBasicMaterial({
-            side: THREE.BackSide,
-            depthWrite: false, colorWrite: false,
-            stencilWrite: true,
+            side: THREE.BackSide, depthWrite: false, colorWrite: false,
+            stencilWrite: true, stencilRef: ref,
             stencilFunc: THREE.AlwaysStencilFunc,
             stencilFail: THREE.KeepStencilOp,
             stencilZFail: THREE.IncrementWrapStencilOp,
             stencilZPass: THREE.KeepStencilOp,
-            clippingPlanes: [plane, ...otherPlanes],
+            clippingPlanes: allPlanes,
           });
           const matFront = new THREE.MeshBasicMaterial({
-            side: THREE.FrontSide,
-            depthWrite: false, colorWrite: false,
-            stencilWrite: true,
+            side: THREE.FrontSide, depthWrite: false, colorWrite: false,
+            stencilWrite: true, stencilRef: ref,
             stencilFunc: THREE.AlwaysStencilFunc,
             stencilFail: THREE.KeepStencilOp,
             stencilZFail: THREE.DecrementWrapStencilOp,
             stencilZPass: THREE.KeepStencilOp,
-            clippingPlanes: [plane, ...otherPlanes],
+            clippingPlanes: allPlanes,
           });
 
-          const back  = new THREE.Mesh(p.mesh.geometry, matBack);
-          const front = new THREE.Mesh(p.mesh.geometry, matFront);
-          back.userData.isStencilHelper  = true;
-          front.userData.isStencilHelper = true;
-          back.renderOrder  = pi + 1;
-          front.renderOrder = pi + 1;
+          const back  = new THREE.Mesh(geoBack,  matBack);
+          const front = new THREE.Mesh(geoFront, matFront);
+          back.userData.stencilHelper  = true;
+          front.userData.stencilHelper = true;
+          back.renderOrder  = pi * 2 + 1;
+          front.renderOrder = pi * 2 + 1;
           p.mesh.add(back);
           p.mesh.add(front);
+
+          // Cap plane for this piece+plane combination, reads stencilRef == ref
+          const sz  = tr.boundsSize * 4;
+          const cap = new THREE.Mesh(
+            new THREE.PlaneGeometry(sz, sz),
+            new THREE.MeshBasicMaterial({
+              color: new THREE.Color(p.color),
+              stencilWrite: true,
+              stencilRef: ref,
+              stencilFunc: THREE.EqualStencilFunc,
+              stencilFail:  THREE.ZeroStencilOp,
+              stencilZFail: THREE.ZeroStencilOp,
+              stencilZPass: THREE.ZeroStencilOp,
+              clippingPlanes: otherPlanes,
+              depthWrite: false,
+              side: THREE.DoubleSide,
+              polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+            })
+          );
+          cap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal.clone());
+          cap.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
+          cap.renderOrder = pi * 2 + 2;
+          tr.scene.add(cap);
+          tr._capMeshes.push(cap);
         });
-      });
-
-      // One cap plane per active clip, drawn after stencil helpers
-      active.forEach((plane, pi) => {
-        const otherPlanes = active.filter((_, j) => j !== pi);
-        const sz = tr.boundsSize * 4;
-        const geo = new THREE.PlaneGeometry(sz, sz);
-
-        // Single cap colored with a neutral mid-gray; each piece's stencil
-        // value is the same (1) so we can't easily per-piece color here.
-        // Use a dark fill that reads as solid anatomy.
-        const mat = new THREE.MeshBasicMaterial({
-          color: 0x444444,
-          stencilWrite: true,
-          stencilRef: 0,
-          stencilFunc: THREE.NotEqualStencilFunc,
-          stencilFail:  THREE.ZeroStencilOp,
-          stencilZFail: THREE.ZeroStencilOp,
-          stencilZPass: THREE.ZeroStencilOp,
-          clippingPlanes: otherPlanes,
-          depthWrite: false,
-          side: THREE.DoubleSide,
-        });
-
-        const capMesh = new THREE.Mesh(geo, mat);
-        capMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal.clone());
-        capMesh.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
-        capMesh.renderOrder = active.length + pi + 10;
-        tr.scene.add(capMesh);
-        tr._capMeshes.push(capMesh);
       });
     }
     tr.updateClipping = updateClipping;
@@ -671,8 +661,9 @@ export default function ViewerPage({ onBack }) {
   function removePiece(idx) {
     const tr = threeRef.current;
     const p = tr.pieces[idx];
-    const toRemove = p.mesh.children.filter(c => c.userData.isStencilHelper);
-    toRemove.forEach(c => { c.material?.dispose(); p.mesh.remove(c); });
+    p.mesh.children.filter(c => c.userData.stencilHelper).forEach(c => {
+      c.material?.dispose(); c.geometry?.dispose(); p.mesh.remove(c);
+    });
     tr.modelGroup.remove(p.mesh);
     p.mesh.geometry.dispose(); p.mesh.material.dispose();
     tr.pieces.splice(idx, 1);
