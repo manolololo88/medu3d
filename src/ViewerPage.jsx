@@ -131,7 +131,7 @@ export default function ViewerPage({ onBack }) {
     const vcCanvas = vcCanvasRef.current;
     const viewport = viewportRef.current;
 
-    // Main renderer — stencil:true needed for cross-section capping
+    // Main renderer — stencil needed for solid cross-section caps
     tr.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, stencil: true });
     tr.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     tr.renderer.localClippingEnabled = true;
@@ -148,9 +148,31 @@ export default function ViewerPage({ onBack }) {
     const fl = new THREE.DirectionalLight(0x7799cc, 0.5); fl.position.set(-5,-2,-4); tr.scene.add(fl);
     const rl = new THREE.DirectionalLight(0xffffff, 0.25); rl.position.set(0,-6,4); tr.scene.add(rl);
 
-    tr.modelGroup = new THREE.Group(); tr.scene.add(tr.modelGroup);
-    tr.msrGroup   = new THREE.Group(); tr.scene.add(tr.msrGroup);
-    tr.capGroup   = new THREE.Group(); tr.scene.add(tr.capGroup);
+    tr.modelGroup   = new THREE.Group(); tr.scene.add(tr.modelGroup);
+    tr.msrGroup     = new THREE.Group(); tr.scene.add(tr.msrGroup);
+    tr.stencilGroup = new THREE.Group(); tr.scene.add(tr.stencilGroup); // back/front stencil meshes
+    tr.capGroup     = new THREE.Group(); tr.scene.add(tr.capGroup);     // cap fill planes
+
+    // Creates the two stencil helper meshes for one piece + one clip plane
+    // (technique from Three.js official clipping_stencil example)
+    function makePlaneStencilMeshes(geometry, plane, stencilRef) {
+      const matBack = new THREE.MeshBasicMaterial({
+        depthWrite: false, depthTest: false, colorWrite: false, side: THREE.BackSide,
+        stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc,
+        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.IncrementWrapStencilOp, stencilZPass: THREE.KeepStencilOp,
+        clippingPlanes: [plane],
+      });
+      const matFront = new THREE.MeshBasicMaterial({
+        depthWrite: false, depthTest: false, colorWrite: false, side: THREE.FrontSide,
+        stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc,
+        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.DecrementWrapStencilOp, stencilZPass: THREE.KeepStencilOp,
+        clippingPlanes: [plane],
+      });
+      const back  = new THREE.Mesh(geometry, matBack);  back.renderOrder  = stencilRef;
+      const front = new THREE.Mesh(geometry, matFront); front.renderOrder = stencilRef;
+      return [back, front];
+    }
+    tr.makePlaneStencilMeshes = makePlaneStencilMeshes;
 
     tr.clipPlanes = {
       x: new THREE.Plane(new THREE.Vector3(-1,0,0), 0),
@@ -289,25 +311,9 @@ export default function ViewerPage({ onBack }) {
     }
     tr.computeBounds = computeBounds;
 
-    function buildCapMaterial(color, otherPlanes) {
-      return new THREE.MeshBasicMaterial({
-        color,
-        side: THREE.DoubleSide,
-        clippingPlanes: otherPlanes,
-        depthWrite: false,
-        stencilWrite: true,
-        stencilRef: 1,
-        stencilFunc: THREE.EqualStencilFunc,
-        stencilFail: THREE.KeepStencilOp,
-        stencilZFail: THREE.KeepStencilOp,
-        stencilZPass: THREE.ZeroStencilOp, // clear after painting so caps don't accumulate
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1,
-      });
-    }
-
     function updateClipping(cs, cv) {
+      tr._lastClipState  = cs;
+      tr._lastClipValues = cv;
       computeBounds();
       const active = [];
       ['x','y','z'].forEach(ax => {
@@ -318,24 +324,20 @@ export default function ViewerPage({ onBack }) {
         if (ax === 'z') { tr.clipPlanes.z.constant = tr.boundsCenter.z + offset; active.push(tr.clipPlanes.z); }
       });
 
-      // Pass 1 — pieces write stencil=1 where they are visible after clipping
+      // Apply clipping to visible meshes (render after stencil, so renderOrder 6+)
       tr.pieces.forEach(p => {
-        const mat = p.mesh.material;
-        mat.clippingPlanes = active;
-        if (active.length > 0) {
-          mat.stencilWrite = true;
-          mat.stencilRef   = 1;
-          mat.stencilFunc  = THREE.AlwaysStencilFunc;
-          mat.stencilZPass = THREE.ReplaceStencilOp;
-          p.mesh.renderOrder = 1;
-        } else {
-          mat.stencilWrite = false;
-          p.mesh.renderOrder = 0;
-        }
-        mat.needsUpdate = true;
+        p.mesh.material.clippingPlanes = active;
+        p.mesh.renderOrder = active.length > 0 ? 6 : 0;
+        p.mesh.material.needsUpdate = true;
       });
 
-      // Pass 2 — rebuild cap planes (one per active clip, sized to bounding box)
+      // Clear previous stencil helpers and cap planes
+      while (tr.stencilGroup.children.length) {
+        const c = tr.stencilGroup.children[0];
+        if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+        else c.material?.dispose();
+        tr.stencilGroup.remove(c);
+      }
       while (tr.capGroup.children.length) {
         const c = tr.capGroup.children[0];
         c.geometry?.dispose(); c.material?.dispose();
@@ -344,28 +346,46 @@ export default function ViewerPage({ onBack }) {
 
       if (active.length === 0) return;
 
-      // Use average color of visible pieces for the cap fill
-      const visiblePieces = tr.pieces.filter(p => p.visible);
-      const avgColor = visiblePieces.length > 0
-        ? new THREE.Color(visiblePieces[Math.floor(visiblePieces.length / 2)].color)
-        : new THREE.Color(0x888888);
-
+      // For each clip plane, build stencil helpers for every piece and one cap plane
       active.forEach((plane, pi) => {
+        const stencilRef = pi + 1; // unique ref per plane (1, 2, 3)
         const otherPlanes = active.filter((_, j) => j !== pi);
-        // Cap plane sized generously to cover the full model cross-section
-        const sz = tr.boundsSize * 3;
-        const capGeo = new THREE.PlaneGeometry(sz, sz);
-        const capMat = buildCapMaterial(avgColor, otherPlanes);
-        const capMesh = new THREE.Mesh(capGeo, capMat);
-        // Orient cap plane perpendicular to the clip plane normal
-        capMesh.quaternion.setFromUnitVectors(
-          new THREE.Vector3(0, 0, 1),
-          plane.normal.clone()
-        );
-        // Position on the clip plane: plane equation is n.x + d = 0, so x = -d*n
-        capMesh.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
-        capMesh.renderOrder = 2;
-        tr.capGroup.add(capMesh);
+
+        // Stencil meshes — one pair per piece, clipped by all OTHER planes too
+        tr.pieces.forEach(p => {
+          if (!p.visible) return;
+          const [back, front] = tr.makePlaneStencilMeshes(p.mesh.geometry, plane, stencilRef);
+          // Also clip stencil helpers by the other active planes
+          back.material.clippingPlanes  = [plane, ...otherPlanes];
+          front.material.clippingPlanes = [plane, ...otherPlanes];
+          // Inherit piece world position (explosion offset)
+          back.position.copy(p.mesh.position);
+          front.position.copy(p.mesh.position);
+          tr.stencilGroup.add(back, front);
+        });
+
+        // Cap fill plane — colored per piece using stencil ref test
+        tr.pieces.forEach(p => {
+          if (!p.visible) return;
+          const sz = tr.boundsSize * 4;
+          const capGeo = new THREE.PlaneGeometry(sz, sz);
+          const capMat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(p.color),
+            stencilWrite: true,
+            stencilRef,
+            stencilFunc: THREE.NotEqualStencilFunc,
+            stencilFail:  THREE.ZeroStencilOp,
+            stencilZFail: THREE.ZeroStencilOp,
+            stencilZPass: THREE.ZeroStencilOp,
+            clippingPlanes: otherPlanes,
+            depthWrite: false,
+          });
+          const capMesh = new THREE.Mesh(capGeo, capMat);
+          capMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal.clone());
+          capMesh.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
+          capMesh.renderOrder = stencilRef + 3; // after stencil helpers (1->4, 2->5)
+          tr.capGroup.add(capMesh);
+        });
       });
     }
     tr.updateClipping = updateClipping;
@@ -391,6 +411,10 @@ export default function ViewerPage({ onBack }) {
         if (dir.length() < 0.001) { p.mesh.position.set(0,0,0); return; }
         p.mesh.position.copy(dir.normalize().multiplyScalar(t_val * tr.boundsSize * 0.8));
       });
+      // Rebuild stencil helpers so cap stays aligned with exploded pieces
+      const cs = tr._lastClipState || { x:false, y:false, z:false };
+      const cv = tr._lastClipValues || { x:0, y:0, z:0 };
+      if (Object.values(cs).some(Boolean)) updateClipping(cs, cv);
     }
     tr.applyExplosion = applyExplosion;
 
