@@ -131,7 +131,7 @@ export default function ViewerPage({ onBack }) {
     const vcCanvas = vcCanvasRef.current;
     const viewport = viewportRef.current;
 
-    // Main renderer — stencil needed for solid cross-section caps
+    // Main renderer — stencil:true required for solid cross-section caps
     tr.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true, stencil: true });
     tr.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     tr.renderer.localClippingEnabled = true;
@@ -148,31 +148,8 @@ export default function ViewerPage({ onBack }) {
     const fl = new THREE.DirectionalLight(0x7799cc, 0.5); fl.position.set(-5,-2,-4); tr.scene.add(fl);
     const rl = new THREE.DirectionalLight(0xffffff, 0.25); rl.position.set(0,-6,4); tr.scene.add(rl);
 
-    tr.modelGroup   = new THREE.Group(); tr.scene.add(tr.modelGroup);
-    tr.msrGroup     = new THREE.Group(); tr.scene.add(tr.msrGroup);
-    tr.stencilGroup = new THREE.Group(); tr.scene.add(tr.stencilGroup); // back/front stencil meshes
-    tr.capGroup     = new THREE.Group(); tr.scene.add(tr.capGroup);     // cap fill planes
-
-    // Creates the two stencil helper meshes for one piece + one clip plane
-    // (technique from Three.js official clipping_stencil example)
-    function makePlaneStencilMeshes(geometry, plane, stencilRef) {
-      const matBack = new THREE.MeshBasicMaterial({
-        depthWrite: false, depthTest: false, colorWrite: false, side: THREE.BackSide,
-        stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc,
-        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.IncrementWrapStencilOp, stencilZPass: THREE.KeepStencilOp,
-        clippingPlanes: [plane],
-      });
-      const matFront = new THREE.MeshBasicMaterial({
-        depthWrite: false, depthTest: false, colorWrite: false, side: THREE.FrontSide,
-        stencilWrite: true, stencilFunc: THREE.AlwaysStencilFunc,
-        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.DecrementWrapStencilOp, stencilZPass: THREE.KeepStencilOp,
-        clippingPlanes: [plane],
-      });
-      const back  = new THREE.Mesh(geometry, matBack);  back.renderOrder  = stencilRef;
-      const front = new THREE.Mesh(geometry, matFront); front.renderOrder = stencilRef;
-      return [back, front];
-    }
-    tr.makePlaneStencilMeshes = makePlaneStencilMeshes;
+    tr.modelGroup = new THREE.Group(); tr.scene.add(tr.modelGroup);
+    tr.msrGroup   = new THREE.Group(); tr.scene.add(tr.msrGroup);
 
     tr.clipPlanes = {
       x: new THREE.Plane(new THREE.Vector3(-1,0,0), 0),
@@ -311,9 +288,17 @@ export default function ViewerPage({ onBack }) {
     }
     tr.computeBounds = computeBounds;
 
+    // Remove stencil children previously added to a mesh
+    function clearStencilChildren(mesh) {
+      const toRemove = mesh.children.filter(c => c.userData.isStencilHelper);
+      toRemove.forEach(c => {
+        if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+        else c.material?.dispose();
+        mesh.remove(c);
+      });
+    }
+
     function updateClipping(cs, cv) {
-      tr._lastClipState  = cs;
-      tr._lastClipValues = cv;
       computeBounds();
       const active = [];
       ['x','y','z'].forEach(ax => {
@@ -324,68 +309,87 @@ export default function ViewerPage({ onBack }) {
         if (ax === 'z') { tr.clipPlanes.z.constant = tr.boundsCenter.z + offset; active.push(tr.clipPlanes.z); }
       });
 
-      // Apply clipping to visible meshes (render after stencil, so renderOrder 6+)
+      // Remove old cap plane from scene
+      if (tr._capMeshes) {
+        tr._capMeshes.forEach(c => { c.geometry?.dispose(); c.material?.dispose(); tr.scene.remove(c); });
+      }
+      tr._capMeshes = [];
+
       tr.pieces.forEach(p => {
+        // Remove old stencil helpers
+        clearStencilChildren(p.mesh);
+
+        // Apply clipping to main mesh
         p.mesh.material.clippingPlanes = active;
-        p.mesh.renderOrder = active.length > 0 ? 6 : 0;
         p.mesh.material.needsUpdate = true;
+
+        if (active.length === 0) return;
+
+        // For each active clip plane, add back+front stencil helpers as children
+        // Children inherit the parent mesh's world matrix automatically
+        active.forEach((plane, pi) => {
+          const otherPlanes = active.filter((_, j) => j !== pi);
+
+          const matBack = new THREE.MeshBasicMaterial({
+            side: THREE.BackSide,
+            depthWrite: false, colorWrite: false,
+            stencilWrite: true,
+            stencilFunc: THREE.AlwaysStencilFunc,
+            stencilFail: THREE.KeepStencilOp,
+            stencilZFail: THREE.IncrementWrapStencilOp,
+            stencilZPass: THREE.KeepStencilOp,
+            clippingPlanes: [plane, ...otherPlanes],
+          });
+          const matFront = new THREE.MeshBasicMaterial({
+            side: THREE.FrontSide,
+            depthWrite: false, colorWrite: false,
+            stencilWrite: true,
+            stencilFunc: THREE.AlwaysStencilFunc,
+            stencilFail: THREE.KeepStencilOp,
+            stencilZFail: THREE.DecrementWrapStencilOp,
+            stencilZPass: THREE.KeepStencilOp,
+            clippingPlanes: [plane, ...otherPlanes],
+          });
+
+          const back  = new THREE.Mesh(p.mesh.geometry, matBack);
+          const front = new THREE.Mesh(p.mesh.geometry, matFront);
+          back.userData.isStencilHelper  = true;
+          front.userData.isStencilHelper = true;
+          back.renderOrder  = pi + 1;
+          front.renderOrder = pi + 1;
+          p.mesh.add(back);
+          p.mesh.add(front);
+        });
       });
 
-      // Clear previous stencil helpers and cap planes
-      while (tr.stencilGroup.children.length) {
-        const c = tr.stencilGroup.children[0];
-        if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
-        else c.material?.dispose();
-        tr.stencilGroup.remove(c);
-      }
-      while (tr.capGroup.children.length) {
-        const c = tr.capGroup.children[0];
-        c.geometry?.dispose(); c.material?.dispose();
-        tr.capGroup.remove(c);
-      }
-
-      if (active.length === 0) return;
-
-      // For each clip plane, build stencil helpers for every piece and one cap plane
+      // One cap plane per active clip, drawn after stencil helpers
       active.forEach((plane, pi) => {
-        const stencilRef = pi + 1; // unique ref per plane (1, 2, 3)
         const otherPlanes = active.filter((_, j) => j !== pi);
+        const sz = tr.boundsSize * 4;
+        const geo = new THREE.PlaneGeometry(sz, sz);
 
-        // Stencil meshes — one pair per piece, clipped by all OTHER planes too
-        tr.pieces.forEach(p => {
-          if (!p.visible) return;
-          const [back, front] = tr.makePlaneStencilMeshes(p.mesh.geometry, plane, stencilRef);
-          // Also clip stencil helpers by the other active planes
-          back.material.clippingPlanes  = [plane, ...otherPlanes];
-          front.material.clippingPlanes = [plane, ...otherPlanes];
-          // Inherit piece world position (explosion offset)
-          back.position.copy(p.mesh.position);
-          front.position.copy(p.mesh.position);
-          tr.stencilGroup.add(back, front);
+        // Single cap colored with a neutral mid-gray; each piece's stencil
+        // value is the same (1) so we can't easily per-piece color here.
+        // Use a dark fill that reads as solid anatomy.
+        const mat = new THREE.MeshBasicMaterial({
+          color: 0x444444,
+          stencilWrite: true,
+          stencilRef: 0,
+          stencilFunc: THREE.NotEqualStencilFunc,
+          stencilFail:  THREE.ZeroStencilOp,
+          stencilZFail: THREE.ZeroStencilOp,
+          stencilZPass: THREE.ZeroStencilOp,
+          clippingPlanes: otherPlanes,
+          depthWrite: false,
+          side: THREE.DoubleSide,
         });
 
-        // Cap fill plane — colored per piece using stencil ref test
-        tr.pieces.forEach(p => {
-          if (!p.visible) return;
-          const sz = tr.boundsSize * 4;
-          const capGeo = new THREE.PlaneGeometry(sz, sz);
-          const capMat = new THREE.MeshBasicMaterial({
-            color: new THREE.Color(p.color),
-            stencilWrite: true,
-            stencilRef,
-            stencilFunc: THREE.NotEqualStencilFunc,
-            stencilFail:  THREE.ZeroStencilOp,
-            stencilZFail: THREE.ZeroStencilOp,
-            stencilZPass: THREE.ZeroStencilOp,
-            clippingPlanes: otherPlanes,
-            depthWrite: false,
-          });
-          const capMesh = new THREE.Mesh(capGeo, capMat);
-          capMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal.clone());
-          capMesh.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
-          capMesh.renderOrder = stencilRef + 3; // after stencil helpers (1->4, 2->5)
-          tr.capGroup.add(capMesh);
-        });
+        const capMesh = new THREE.Mesh(geo, mat);
+        capMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal.clone());
+        capMesh.position.copy(plane.normal.clone().multiplyScalar(-plane.constant));
+        capMesh.renderOrder = active.length + pi + 10;
+        tr.scene.add(capMesh);
+        tr._capMeshes.push(capMesh);
       });
     }
     tr.updateClipping = updateClipping;
@@ -411,10 +415,6 @@ export default function ViewerPage({ onBack }) {
         if (dir.length() < 0.001) { p.mesh.position.set(0,0,0); return; }
         p.mesh.position.copy(dir.normalize().multiplyScalar(t_val * tr.boundsSize * 0.8));
       });
-      // Rebuild stencil helpers so cap stays aligned with exploded pieces
-      const cs = tr._lastClipState || { x:false, y:false, z:false };
-      const cv = tr._lastClipValues || { x:0, y:0, z:0 };
-      if (Object.values(cs).some(Boolean)) updateClipping(cs, cv);
     }
     tr.applyExplosion = applyExplosion;
 
@@ -671,6 +671,8 @@ export default function ViewerPage({ onBack }) {
   function removePiece(idx) {
     const tr = threeRef.current;
     const p = tr.pieces[idx];
+    const toRemove = p.mesh.children.filter(c => c.userData.isStencilHelper);
+    toRemove.forEach(c => { c.material?.dispose(); p.mesh.remove(c); });
     tr.modelGroup.remove(p.mesh);
     p.mesh.geometry.dispose(); p.mesh.material.dispose();
     tr.pieces.splice(idx, 1);
